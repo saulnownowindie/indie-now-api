@@ -1,0 +1,24 @@
+# Node
+node_modules/
+
+# Environment
+.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# Uploads
+src/uploads/*
+
+# Prisma
+prisma/dev.db
+prisma/dev.db-journal
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
