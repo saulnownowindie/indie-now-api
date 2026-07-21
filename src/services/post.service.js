@@ -54,3 +54,30 @@ export const createPost = async (data) => {
     },
   });
 };
+
+export const updatePost = async (id, data) => {
+  return prisma.post.update({
+    where: {
+      id: Number(id),
+    },
+    data,
+    include: {
+      category: true,
+      author: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      socialLinks: true,
+    },
+  });
+};
+export const deletePost = async (id) => {
+  return prisma.post.delete({
+    where: {
+      id: Number(id),
+    },
+  });
+};

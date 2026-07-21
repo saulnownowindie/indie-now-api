@@ -2,24 +2,21 @@ import {
   getAllPosts,
   getPostBySlug,
   createPost,
+  updatePost,
+  deletePost,
 } from "../services/post.service.js";
-
 import { postSchema } from "../validators/post.validator.js";
 
-export const getPosts = async (req, res) => {
+export const getPosts = async (req, res, next) => {
   try {
     const posts = await getAllPosts();
     res.json(posts);
   } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      message: "Error al obtener publicaciones",
-    });
+    next(error);
   }
 };
 
-export const getPost = async (req, res) => {
+export const getPost = async (req, res, next) => {
   try {
     const { slug } = req.params;
 
@@ -33,15 +30,11 @@ export const getPost = async (req, res) => {
 
     res.json(post);
   } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      message: "Error al obtener publicación",
-    });
+    next(error);
   }
 };
 
-export const postPost = async (req, res) => {
+export const postPost = async (req, res, next) => {
   try {
     const data = postSchema.parse(req.body);
 
@@ -51,10 +44,32 @@ export const postPost = async (req, res) => {
 
     res.status(201).json(post);
   } catch (error) {
-    console.error(error);
+    next(error);
+  }
+};
 
-    res.status(500).json({
-      message: "Error al crear publicación",
+export const putPost = async (req, res, next) => {
+  try {
+    const data = postSchema.parse(req.body);
+
+    data.authorId = req.user.id;
+
+    const post = await updatePost(req.params.id, data);
+
+    res.json(post);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const removePost = async (req, res, next) => {
+  try {
+    await deletePost(req.params.id);
+
+    res.json({
+      message: "Publicación eliminada correctamente",
     });
+  } catch (error) {
+    next(error);
   }
 };
