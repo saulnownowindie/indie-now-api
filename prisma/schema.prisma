@@ -7,61 +7,250 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+//
+// ENUMS
+//
+
+enum PublishStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum SocialPlatform {
+  INSTAGRAM
+  TIKTOK
+  YOUTUBE
+  FACEBOOK
+  X
+  THREADS
+  OTHER
+}
+
+enum MusicPlatform {
+  SPOTIFY
+  YOUTUBE_MUSIC
+  APPLE_MUSIC
+  DEEZER
+  TIDAL
+  AMAZON_MUSIC
+  OTHER
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+//
+// USER
+//
+
 model User {
   id        Int      @id @default(autoincrement())
   name      String
   email     String   @unique
   password  String
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  posts     Post[]
+
+  news         News[]
+  liveSessions LiveSession[]
+  videos       Video[]
+  playlists    Playlist[]
 }
+
+//
+// CATEGORY
+//
 
 model Category {
   id        Int      @id @default(autoincrement())
   name      String
   slug      String   @unique
+
   createdAt DateTime @default(now())
-  posts     Post[]
+  updatedAt DateTime @updatedAt
+
+  news   News[]
+  videos Video[]
 }
 
-model Post {
-  id          Int          @id @default(autoincrement())
-  title       String
-  slug        String       @unique
-  excerpt     String
-  content     String
-  coverImage  String
-  coverVideo  String
-  status      PostStatus   @default(DRAFT)
-  publishedAt DateTime?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  authorId    Int
-  categoryId  Int
-  author      User         @relation(fields: [authorId], references: [id])
-  category    Category     @relation(fields: [categoryId], references: [id])
-  socialLinks SocialLink[]
-}
+//
+// MEDIA
+//
 
-model SocialLink {
-  id       Int    @id @default(autoincrement())
-  platform String
-  url      String
-  postId   Int
-  post     Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
-}
-
-enum PostStatus {
-  DRAFT
-  PUBLISHED
-}
 model Media {
-  id           Int      @id @default(autoincrement())
+  id           Int       @id @default(autoincrement())
+
+  type         MediaType
+
   filename     String
   originalName String
   mimeType     String
   size         Int
   url          String
+
   createdAt    DateTime @default(now())
+
+  newsCovers         News[]        @relation("NewsCover")
+  liveSessionCovers  LiveSession[] @relation("LiveSessionCover")
+  videoCovers        Video[]       @relation("VideoCover")
+  playlistCovers     Playlist[]    @relation("PlaylistCover")
+}
+
+//
+// NEWS
+//
+
+model News {
+  id        Int      @id @default(autoincrement())
+
+  title     String
+  slug      String   @unique
+
+  platform  SocialPlatform
+  url       String
+
+  featured       Boolean @default(false)
+  isVisible      Boolean @default(true)
+
+  seoTitle       String?
+  seoDescription String?
+
+  status         PublishStatus @default(DRAFT)
+  publishedAt    DateTime?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  authorId       Int
+  categoryId     Int
+
+  coverImageId   Int?
+
+  author         User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category       Category  @relation(fields: [categoryId], references: [id])
+
+  coverImage     Media?    @relation("NewsCover", fields: [coverImageId], references: [id])
+
+  @@index([status])
+  @@index([publishedAt])
+  @@index([categoryId])
+  @@index([authorId])
+}
+
+//
+// LIVE SESSIONS
+//
+
+model LiveSession {
+  id        Int      @id @default(autoincrement())
+
+  title      String
+  slug       String   @unique
+
+  youtubeUrl String
+
+  featured       Boolean @default(false)
+  isVisible      Boolean @default(true)
+
+  seoTitle       String?
+  seoDescription String?
+
+  status         PublishStatus @default(DRAFT)
+  publishedAt    DateTime?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  authorId       Int
+
+  coverImageId   Int?
+
+  author         User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  coverImage     Media? @relation("LiveSessionCover", fields: [coverImageId], references: [id])
+
+  @@index([status])
+  @@index([publishedAt])
+  @@index([authorId])
+}
+
+//
+// VIDEOS
+//
+
+model Video {
+  id        Int      @id @default(autoincrement())
+
+  title      String
+  slug       String   @unique
+
+  youtubeUrl String
+
+  featured       Boolean @default(false)
+  isVisible      Boolean @default(true)
+
+  seoTitle       String?
+  seoDescription String?
+
+  status         PublishStatus @default(DRAFT)
+  publishedAt    DateTime?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  authorId       Int
+  categoryId     Int?
+
+  coverImageId   Int?
+
+  author         User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category       Category? @relation(fields: [categoryId], references: [id])
+
+  coverImage     Media? @relation("VideoCover", fields: [coverImageId], references: [id])
+
+  @@index([status])
+  @@index([publishedAt])
+  @@index([categoryId])
+  @@index([authorId])
+}
+
+//
+// PLAYLISTS
+//
+
+model Playlist {
+  id        Int      @id @default(autoincrement())
+
+  title      String
+  slug       String   @unique
+
+  platform   MusicPlatform
+  url        String
+
+  featured       Boolean @default(false)
+  isVisible      Boolean @default(true)
+
+  seoTitle       String?
+  seoDescription String?
+
+  status         PublishStatus @default(DRAFT)
+  publishedAt    DateTime?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  authorId       Int
+
+  coverImageId   Int?
+
+  author         User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  coverImage     Media? @relation("PlaylistCover", fields: [coverImageId], references: [id])
+
+  @@index([status])
+  @@index([publishedAt])
+  @@index([authorId])
 }

@@ -6,14 +6,13 @@ export const uploadMedia = async (req, res) => {
     });
   }
 
-  const folder = req.file.mimetype.startsWith("image/") ? "images" : "videos";
   const media = await prisma.media.create({
     data: {
       filename: req.file.filename,
       originalName: req.file.originalname,
       mimeType: req.file.mimetype,
       size: req.file.size,
-      url: `/uploads/${folder}/${req.file.filename}`,
+      url: `/uploads/images/${req.file.filename}`,
     },
   });
   res.status(201).json({
