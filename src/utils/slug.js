@@ -8,3 +8,19 @@ export const generateSlug = (title) => {
     trim: true,
   });
 };
+
+export const generateUniqueSlug = async (
+  title,
+  { fallback, isSlugTaken }
+) => {
+  const baseSlug = generateSlug(title) || fallback;
+  let slug = baseSlug;
+  let suffix = 2;
+
+  while (await isSlugTaken(slug)) {
+    slug = `${baseSlug}-${suffix}`;
+    suffix += 1;
+  }
+
+  return slug;
+};

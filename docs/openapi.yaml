@@ -1,0 +1,480 @@
+openapi: 3.0.3
+info:
+  title: Indie Now API
+  description: REST API for Indie Now music and content platform.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api
+    description: Local Development Server
+paths:
+  /auth/login:
+    post:
+      summary: User Login
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Successful login
+        '400':
+          description: Validation error
+        '401':
+          description: Invalid credentials
+
+  /categories:
+    get:
+      summary: Get all categories
+      tags:
+        - Categories
+      responses:
+        '200':
+          description: List of categories
+    post:
+      summary: Create category
+      tags:
+        - Categories
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+      responses:
+        '201':
+          description: Category created
+
+  /categories/{slug}:
+    get:
+      summary: Get category by slug
+      tags:
+        - Categories
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Category found
+        '404':
+          description: Category not found
+
+  /categories/{id}:
+    put:
+      summary: Update category
+      tags:
+        - Categories
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        '200':
+          description: Category updated
+    delete:
+      summary: Delete category
+      tags:
+        - Categories
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Category deleted
+
+  /media/upload:
+    post:
+      summary: Upload image file
+      tags:
+        - Media
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: File uploaded successfully
+
+  /news:
+    get:
+      summary: Get all news
+      tags:
+        - News
+      responses:
+        '200':
+          description: List of news
+    post:
+      summary: Create news
+      tags:
+        - News
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - platform
+                - url
+                - categoryId
+              properties:
+                title:
+                  type: string
+                platform:
+                  type: string
+                  enum: [INSTAGRAM, TIKTOK, YOUTUBE, FACEBOOK, X, THREADS, OTHER]
+                url:
+                  type: string
+                categoryId:
+                  type: integer
+                coverImageId:
+                  type: integer
+      responses:
+        '201':
+          description: News created
+
+  /news/{slug}:
+    get:
+      summary: Get news by slug
+      tags:
+        - News
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: News found
+
+  /news/{id}:
+    put:
+      summary: Update news
+      tags:
+        - News
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: News updated
+    delete:
+      summary: Delete news
+      tags:
+        - News
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: News deleted
+
+  /videos:
+    get:
+      summary: Get all videos
+      tags:
+        - Videos
+      responses:
+        '200':
+          description: List of videos
+    post:
+      summary: Create video
+      tags:
+        - Videos
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Video created
+
+  /videos/{slug}:
+    get:
+      summary: Get video by slug
+      tags:
+        - Videos
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Video found
+
+  /videos/{id}:
+    put:
+      summary: Update video
+      tags:
+        - Videos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Video updated
+    delete:
+      summary: Delete video
+      tags:
+        - Videos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Video deleted
+
+  /live-sessions:
+    get:
+      summary: Get all live sessions
+      tags:
+        - Live Sessions
+      responses:
+        '200':
+          description: List of live sessions
+    post:
+      summary: Create live session
+      tags:
+        - Live Sessions
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Live session created
+
+  /live-sessions/featured:
+    get:
+      summary: Get featured live sessions
+      tags:
+        - Live Sessions
+      responses:
+        '200':
+          description: List of featured live sessions
+
+  /live-sessions/{slug}:
+    get:
+      summary: Get live session by slug
+      tags:
+        - Live Sessions
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Live session found
+
+  /live-sessions/{id}:
+    put:
+      summary: Update live session
+      tags:
+        - Live Sessions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Live session updated
+    delete:
+      summary: Delete live session
+      tags:
+        - Live Sessions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Live session deleted
+
+  /playlists:
+    get:
+      summary: Get all playlists
+      tags:
+        - Playlists
+      responses:
+        '200':
+          description: List of playlists
+    post:
+      summary: Import playlist from Spotify URL
+      tags:
+        - Playlists
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - spotifyUrl
+              properties:
+                spotifyUrl:
+                  type: string
+      responses:
+        '201':
+          description: Playlist created
+
+  /playlists/featured:
+    get:
+      summary: Get featured playlists
+      tags:
+        - Playlists
+      responses:
+        '200':
+          description: List of featured playlists
+
+  /playlists/{slug}:
+    get:
+      summary: Get playlist by slug
+      tags:
+        - Playlists
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Playlist found
+
+  /playlists/{id}:
+    put:
+      summary: Update playlist
+      tags:
+        - Playlists
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Playlist updated
+    delete:
+      summary: Delete playlist
+      tags:
+        - Playlists
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Playlist deleted
+
+  /playlists/{id}/sync:
+    post:
+      summary: Synchronize playlist with Spotify API
+      tags:
+        - Playlists
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Playlist synced successfully
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

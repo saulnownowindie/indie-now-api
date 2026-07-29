@@ -4,6 +4,12 @@ import { Prisma } from "@prisma/client";
 export const errorHandler = (err, req, res, next) => {
   console.error(err);
 
+  if (Number.isInteger(err.statusCode)) {
+    return res.status(err.statusCode).json({
+      message: err.message,
+    });
+  }
+
   if (err instanceof ZodError) {
     return res.status(400).json({
       message: "Error de validación",
@@ -21,6 +27,11 @@ export const errorHandler = (err, req, res, next) => {
       case "P2025":
         return res.status(404).json({
           message: "Registro no encontrado.",
+        });
+
+      case "P2003":
+        return res.status(409).json({
+          message: "La relación indicada no es válida.",
         });
     }
   }
