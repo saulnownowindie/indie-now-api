@@ -1,3 +1,26 @@
+
+import { createInstagramCover } from "./instagram.js";
+
+export const postInstagramCover = async (req, res, next) => {
+  try {
+    const { url } = req.body;
+
+    if (!url || typeof url !== "string") {
+      return res.status(400).json({
+        message: "La URL de Instagram es obligatoria.",
+      });
+    }
+
+    const media = await createInstagramCover(url.trim());
+
+    res.status(201).json({
+      message: "Portada obtenida correctamente.",
+      media,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 import {
   createNews,
   deleteNews,
