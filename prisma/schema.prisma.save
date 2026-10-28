@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  name         String
+  email        String        @unique
+  password     String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  liveSessions LiveSession[]
+  news         News[]
+  playlists    Playlist[]
+  videos       Video[]
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  news      News[]
+  videos    Video[]
+}
+
+model Media {
+  id                Int           @id @default(autoincrement())
+  filename          String
+  originalName      String
+  mimeType          String
+  size              Int
+  url               String
+  createdAt         DateTime      @default(now())
+  type              MediaType
+  liveSessionCovers LiveSession[] @relation("LiveSessionCover")
+  newsCovers        News[]        @relation("NewsCover")
+  videoCovers       Video[]       @relation("VideoCover")
+}
+
+model News {
+  id             Int            @id @default(autoincrement())
+  title          String
+  slug           String         @unique
+  platform       SocialPlatform
+  url            String
+  featured       Boolean        @default(false)
+  isVisible      Boolean        @default(true)
+  seoTitle       String?
+  seoDescription String?
+  status         PublishStatus  @default(DRAFT)
+  publishedAt    DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  authorId       Int
+  categoryId     Int
+  coverImageId   Int?
+  author         User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category       Category       @relation(fields: [categoryId], references: [id])
+  coverImage     Media?         @relation("NewsCover", fields: [coverImageId], references: [id])
+
+  @@index([status])
+  @@index([publishedAt])
+  @@index([categoryId])
+  @@index([authorId])
+}
+
+model LiveSession {
+  id             Int           @id @default(autoincrement())
+  title          String
+  slug           String        @unique
+  youtubeUrl     String
+  featured       Boolean       @default(false)
+  isVisible      Boolean       @default(true)
+  seoTitle       String?
+  seoDescription String?
+  status         PublishStatus @default(DRAFT)
+  publishedAt    DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  authorId       Int
+  coverImageId   Int?
+  author         User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  coverImage     Media?        @relation("LiveSessionCover", fields: [coverImageId], references: [id])
+
+  @@index([status])
+  @@index([publishedAt])
+  @@index([authorId])
+}
+
+model Video {
+  id             Int           @id @default(autoincrement())
+  title          String
+  slug           String        @unique
+  youtubeUrl     String
+  featured       Boolean       @default(false)
+  isVisible      Boolean       @default(true)
+  seoTitle       String?
+  seoDescription String?
+  status         PublishStatus @default(DRAFT)
+  publishedAt    DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  authorId       Int
+  categoryId     Int?
+  coverImageId   Int?
+  author         User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category       Category?     @relation(fields: [categoryId], references: [id])
+  coverImage     Media?        @relation("VideoCover", fields: [coverImageId], references: [id])
+
+  @@index([status])
+  @@index([publishedAt])
+  @@index([categoryId])
+  @@index([authorId])
+}
+
+model Playlist {
+  id                Int           @id @default(autoincrement())
+  title             String
+  slug              String        @unique
+  platform          MusicPlatform @default(SPOTIFY)
+  featured          Boolean       @default(false)
+  isVisible         Boolean       @default(true)
+  seoTitle          String?
+  seoDescription    String?
+  status            PublishStatus @default(DRAFT)
+  publishedAt       DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  authorId          Int
+  coverUrl          String?
+  description       String?
+  ownerName         String?
+  sortOrder         Int           @default(0)
+  spotifyId         String        @unique
+  spotifySnapshotId String?
+  spotifySyncedAt   DateTime
+  spotifyUrl        String        @unique
+  tracksCount       Int?
+  author            User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([publishedAt])
+  @@index([authorId])
+  @@index([status, isVisible, featured, sortOrder])
+}
+
+enum PublishStatus {
+  DRAFT
+  PUBLISHED
+}
+
+npx prisma migrate deploy
+enum SocialPlatform {
+  INSTAGRAM
+  TIKTOK
+  YOUTUBE
+  FACEBOOK
+  X
+  THREADS
+  OTHER
+}
+
+enum MusicPlatform {
+  SPOTIFY
+  YOUTUBE_MUSIC
+  APPLE_MUSIC
+  DEEZER
+  TIDAL
+  AMAZON_MUSIC
+  OTHER
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
