@@ -7,6 +7,7 @@ datasource db {
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
+
 model User {
   id           Int           @id @default(autoincrement())
   name         String
@@ -15,8 +16,10 @@ model User {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   liveSessions LiveSession[]
+  merch        Merch[]
   news         News[]
   playlists    Playlist[]
+  reels        Reel[]
   videos       Video[]
 }
 
@@ -40,7 +43,9 @@ model Media {
   createdAt         DateTime      @default(now())
   type              MediaType
   liveSessionCovers LiveSession[] @relation("LiveSessionCover")
+  merchCovers       Merch[]       @relation("MerchCover")
   newsCovers        News[]        @relation("NewsCover")
+  reelCovers        Reel[]        @relation("ReelCover")
   videoCovers       Video[]       @relation("VideoCover")
 }
 
@@ -118,6 +123,64 @@ model Video {
   @@index([publishedAt])
   @@index([categoryId])
   @@index([authorId])
+}
+
+model Reel {
+  id             Int            @id @default(autoincrement())
+  title          String
+  slug           String         @unique
+  platform       SocialPlatform
+  url            String
+  coverImageId   Int?
+  coverUrl       String?
+  featured       Boolean        @default(false)
+  isVisible      Boolean        @default(true)
+  seoTitle       String?
+  seoDescription String?
+  status         PublishStatus  @default(DRAFT)
+  publishedAt    DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  authorId       Int
+  author         User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  coverImage     Media?         @relation("ReelCover", fields: [coverImageId], references: [id])
+
+  @@index([status])
+  @@index([publishedAt])
+  @@index([authorId])
+  @@index([status, isVisible, featured])
+}
+
+model Merch {
+  id             Int           @id @default(autoincrement())
+  name           String
+  slug           String        @unique
+  description    String?
+  collection     String?
+  price          String?
+  details        Json?
+  imageUrl       String?
+  gallery        Json?
+  badge          String?
+  url            String?
+  featured       Boolean       @default(false)
+  isVisible      Boolean       @default(true)
+  sortOrder      Int           @default(0)
+  seoTitle       String?
+  seoDescription String?
+  status         PublishStatus @default(DRAFT)
+  publishedAt    DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  authorId       Int
+  coverImageId   Int?
+  author         User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  coverImage     Media?        @relation("MerchCover", fields: [coverImageId], references: [id])
+
+  @@index([status])
+  @@index([publishedAt])
+  @@index([authorId])
+  @@index([status, isVisible, featured, sortOrder])
 }
 
 model Playlist {
