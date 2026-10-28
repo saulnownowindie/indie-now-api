@@ -1,7 +1,7 @@
-import supabase from "../../config/supabase.js";
 import prisma from "../../config/prisma.js";
+import { uploadBuffer } from "../../utils/cloudinaryUpload.js";
 
-const BUCKET = "news-covers";
+const FOLDER = "news-covers";
 
 const isInstagramUrl = (value) => {
   try {
@@ -34,12 +34,6 @@ const extractOgImage = (html) => {
   }
 
   return null;
-};
-
-const getExtensionFromType = (contentType) => {
-  if (contentType.includes("png")) return "png";
-  if (contentType.includes("webp")) return "webp";
-  return "jpg";
 };
 
 export const createInstagramCover = async (instagramUrl) => {
@@ -97,35 +91,23 @@ export const createInstagramCover = async (instagramUrl) => {
     throw new Error("La imagen obtenida está vacía.");
   }
 
-  const extension = getExtensionFromType(contentType);
-
-  const fileName = `instagram-${Date.now()}-${Math.round(
+  const publicId = `instagram-${Date.now()}-${Math.round(
     Math.random() * 1e9,
-  )}.${extension}`;
+  )}`;
 
-  const { error: uploadError } = await supabase.storage
-    .from(BUCKET)
-    .upload(fileName, buffer, {
-      contentType,
-      upsert: false,
-    });
-
-  if (uploadError) {
-    throw uploadError;
-  }
-
-  const { data: publicUrlData } = supabase.storage
-    .from(BUCKET)
-    .getPublicUrl(fileName);
+  const uploaded = await uploadBuffer(buffer, {
+    folder: FOLDER,
+    public_id: publicId,
+  });
 
   return prisma.media.create({
     data: {
       type: "IMAGE",
-      filename: fileName,
-      originalName: fileName,
+      filename: uploaded.public_id,
+      originalName: `${publicId}.${uploaded.format}`,
       mimeType: contentType,
       size: buffer.length,
-      url: publicUrlData.publicUrl,
+      url: uploaded.secure_url,
     },
   });
 };

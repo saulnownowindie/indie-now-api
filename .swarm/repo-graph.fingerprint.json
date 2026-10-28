@@ -1,0 +1,179 @@
+{
+  "schema_version": 1,
+  "extractorStamp": "ed48c15868acb68059e00d5f4e2a0163fc480da6c317a94bfe90dd40942a163a",
+  "exclusionStamp": "cceddb84f07166eb48fa3314cdb4ef68e65c367692eed22b40d7163525bc2198",
+  "files": {
+    "package.json": {
+      "size": 794,
+      "mtimeMs": 1793157215929.968
+    },
+    "prisma/hashPassword.js": {
+      "size": 132,
+      "mtimeMs": 1793153571123.0056
+    },
+    "prisma/seed.js": {
+      "size": 7878,
+      "mtimeMs": 1793153571123.0056
+    },
+    "src/app.js": {
+      "size": 1422,
+      "mtimeMs": 1793153571123.0056
+    },
+    "src/config/prisma.js": {
+      "size": 106,
+      "mtimeMs": 1793153571123.0056
+    },
+    "src/config/supabase.js": {
+      "size": 178,
+      "mtimeMs": 1793153571123.0056
+    },
+    "src/integrations/spotify/parser.js": {
+      "size": 1003,
+      "mtimeMs": 1793153571123.0056
+    },
+    "src/integrations/spotify/provider.js": {
+      "size": 3114,
+      "mtimeMs": 1793153571123.0056
+    },
+    "src/middlewares/auth.middleware.js": {
+      "size": 535,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/middlewares/error.middleware.js": {
+      "size": 974,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/middlewares/upload.middleware.js": {
+      "size": 445,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/auth/controller.js": {
+      "size": 1026,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/auth/routes.js": {
+      "size": 176,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/auth/service.js": {
+      "size": 161,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/auth/validation.js": {
+      "size": 271,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/category/controller.js": {
+      "size": 1522,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/category/routes.js": {
+      "size": 484,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/category/service.js": {
+      "size": 808,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/category/validation.js": {
+      "size": 445,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/liveSession/controller.js": {
+      "size": 1944,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/liveSession/routes.js": {
+      "size": 641,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/liveSession/service.js": {
+      "size": 2121,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/liveSession/validation.js": {
+      "size": 1709,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/media/controller.js": {
+      "size": 529,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/media/routes.js": {
+      "size": 248,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/media/service.js": {
+      "size": 913,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/media/validation.js": {
+      "size": 223,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/news/controller.js": {
+      "size": 1969,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/news/instagram.js": {
+      "size": 3057,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/news/routes.js": {
+      "size": 571,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/news/service.js": {
+      "size": 1507,
+      "mtimeMs": 1793153571124.0056
+    },
+    "src/modules/news/validation.js": {
+      "size": 1831,
+      "mtimeMs": 1793153571125.0056
+    },
+    "src/modules/playlist/controller.js": {
+      "size": 2201,
+      "mtimeMs": 1793153571125.0056
+    },
+    "src/modules/playlist/routes.js": {
+      "size": 695,
+      "mtimeMs": 1793153571125.0056
+    },
+    "src/modules/playlist/service.js": {
+      "size": 2903,
+      "mtimeMs": 1793153571125.0056
+    },
+    "src/modules/playlist/validation.js": {
+      "size": 1507,
+      "mtimeMs": 1793153571125.0056
+    },
+    "src/modules/video/controller.js": {
+      "size": 1490,
+      "mtimeMs": 1793153571125.0056
+    },
+    "src/modules/video/routes.js": {
+      "size": 484,
+      "mtimeMs": 1793153571125.0056
+    },
+    "src/modules/video/service.js": {
+      "size": 1784,
+      "mtimeMs": 1793153571125.0056
+    },
+    "src/modules/video/validation.js": {
+      "size": 1868,
+      "mtimeMs": 1793153571125.0056
+    },
+    "src/server.js": {
+      "size": 414,
+      "mtimeMs": 1793157309290.13
+    },
+    "src/utils/slug.js": {
+      "size": 470,
+      "mtimeMs": 1793153571125.0056
+    },
+    "src/utils/youtube.js": {
+      "size": 1235,
+      "mtimeMs": 1793153571125.0056
+    }
+  }
+}
