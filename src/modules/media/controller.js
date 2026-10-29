@@ -11,6 +11,12 @@ import {
   updateMediaSchema,
 } from "./validation.js";
 
+// Lista blanca: el cliente solo elige la clave, nunca el nombre real de la carpeta.
+const FOLDERS = {
+  news: "news-covers",
+  merch: "merch",
+};
+
 export const getMedia = async (req, res, next) => {
   try {
     const media = await getAllMedia();
@@ -46,8 +52,11 @@ export const uploadMedia = async (req, res, next) => {
       });
     }
 
-    const file = mediaFileSchema.parse(req.file);
-    const media = await createImageMedia(file);
+    // Solo valida. NO reasignar: zod descarta el buffer.
+    mediaFileSchema.parse(req.file);
+
+    const folder = FOLDERS[req.query.folder] ?? FOLDERS.news;
+    const media = await createImageMedia(req.file, folder);
 
     res.status(201).json({
       message: "Archivo subido correctamente.",

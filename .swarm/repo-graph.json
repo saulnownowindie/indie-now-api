@@ -376,6 +376,73 @@
         ]
       }
     },
+    "/home/saul/Escritorio/web/indie-now-api/src/config/cloudinary.js": {
+      "filePath": "/home/saul/Escritorio/web/indie-now-api/src/config/cloudinary.js",
+      "moduleName": "src/config/cloudinary.js",
+      "exports": [
+        "default"
+      ],
+      "exportLines": {
+        "default": 10
+      },
+      "exportRanges": {
+        "default": {
+          "startLine": 10,
+          "endLine": 10
+        }
+      },
+      "exportKinds": {
+        "default": "function"
+      },
+      "imports": [
+        "cloudinary"
+      ],
+      "language": "javascript",
+      "mtime": "2026-10-28T03:55:12.170Z",
+      "sizeBytes": 257,
+      "mtimeMs": 1793159712170.7312,
+      "ontology": {
+        "roles": [
+          "config"
+        ],
+        "packageBoundary": "src/config",
+        "routes": [],
+        "dataOperations": [],
+        "security": [
+          {
+            "kind": "secret_handling",
+            "line": 5,
+            "evidence": "api_key: process.env.CLOUDINARY_API_KEY,",
+            "confidence": "low"
+          }
+        ],
+        "conventions": [],
+        "findings": [],
+        "links": [
+          {
+            "kind": "CONFIGURES",
+            "subject": "CLOUDINARY_CLOUD_NAME",
+            "line": 4,
+            "evidence": "cloud_name: process.env.CLOUDINARY_CLOUD_NAME,",
+            "confidence": "medium"
+          },
+          {
+            "kind": "CONFIGURES",
+            "subject": "CLOUDINARY_API_KEY",
+            "line": 5,
+            "evidence": "api_key: process.env.CLOUDINARY_API_KEY,",
+            "confidence": "medium"
+          },
+          {
+            "kind": "CONFIGURES",
+            "subject": "CLOUDINARY_API_SECRET",
+            "line": 6,
+            "evidence": "api_secret: process.env.CLOUDINARY_API_SECRET,",
+            "confidence": "medium"
+          }
+        ]
+      }
+    },
     "/home/saul/Escritorio/web/indie-now-api/src/config/prisma.js": {
       "filePath": "/home/saul/Escritorio/web/indie-now-api/src/config/prisma.js",
       "moduleName": "src/config/prisma.js",
@@ -413,59 +480,6 @@
         "conventions": [],
         "findings": [],
         "links": []
-      }
-    },
-    "/home/saul/Escritorio/web/indie-now-api/src/config/supabase.js": {
-      "filePath": "/home/saul/Escritorio/web/indie-now-api/src/config/supabase.js",
-      "moduleName": "src/config/supabase.js",
-      "exports": [
-        "default"
-      ],
-      "exportLines": {
-        "default": 8
-      },
-      "exportRanges": {
-        "default": {
-          "startLine": 8,
-          "endLine": 8
-        }
-      },
-      "exportKinds": {
-        "default": "function"
-      },
-      "imports": [
-        "@supabase/supabase-js"
-      ],
-      "language": "javascript",
-      "mtime": "2026-10-28T02:12:51.123Z",
-      "sizeBytes": 178,
-      "mtimeMs": 1793153571123.0056,
-      "ontology": {
-        "roles": [
-          "config"
-        ],
-        "packageBoundary": "src/config",
-        "routes": [],
-        "dataOperations": [],
-        "security": [],
-        "conventions": [],
-        "findings": [],
-        "links": [
-          {
-            "kind": "CONFIGURES",
-            "subject": "SUPABASE_URL",
-            "line": 4,
-            "evidence": "process.env.SUPABASE_URL,",
-            "confidence": "medium"
-          },
-          {
-            "kind": "CONFIGURES",
-            "subject": "SUPABASE_SECRET_KEY",
-            "line": 5,
-            "evidence": "process.env.SUPABASE_SECRET_KEY,",
-            "confidence": "medium"
-          }
-        ]
       }
     },
     "/home/saul/Escritorio/web/indie-now-api/src/integrations/spotify/parser.js": {
@@ -858,12 +872,12 @@
         "default"
       ],
       "exportLines": {
-        "default": 27
+        "default": 25
       },
       "exportRanges": {
         "default": {
-          "startLine": 27,
-          "endLine": 27
+          "startLine": 25,
+          "endLine": 25
         }
       },
       "exportKinds": {
@@ -873,9 +887,9 @@
         "multer"
       ],
       "language": "javascript",
-      "mtime": "2026-10-28T02:12:51.124Z",
-      "sizeBytes": 445,
-      "mtimeMs": 1793153571124.0056,
+      "mtime": "2026-10-28T04:01:09.338Z",
+      "sizeBytes": 444,
+      "mtimeMs": 1793160069338.0432,
       "ontology": {
         "roles": [
           "source_module"
@@ -2383,41 +2397,41 @@
       "moduleName": "src/modules/media/service.js",
       "exports": [
         "createImageMedia",
-        "extension",
-        "fileName"
+        "publicId",
+        "uploaded"
       ],
       "exportLines": {
         "createImageMedia": 6,
-        "extension": 7,
-        "fileName": 12
+        "publicId": 7,
+        "uploaded": 9
       },
       "exportRanges": {
         "createImageMedia": {
           "startLine": 6,
-          "endLine": 41
+          "endLine": 24
         },
-        "extension": {
+        "publicId": {
           "startLine": 7,
-          "endLine": 10
+          "endLine": 7
         },
-        "fileName": {
-          "startLine": 12,
-          "endLine": 14
+        "uploaded": {
+          "startLine": 9,
+          "endLine": 12
         }
       },
       "exportKinds": {
         "createImageMedia": "const",
-        "extension": "const",
-        "fileName": "const"
+        "publicId": "const",
+        "uploaded": "const"
       },
       "imports": [
         "../../config/prisma.js",
-        "../../config/supabase.js"
+        "../../utils/cloudinaryUpload.js"
       ],
       "language": "javascript",
-      "mtime": "2026-10-28T02:12:51.124Z",
-      "sizeBytes": 913,
-      "mtimeMs": 1793153571124.0056,
+      "mtime": "2026-10-28T03:55:22.740Z",
+      "sizeBytes": 609,
+      "mtimeMs": 1793159722740.6775,
       "ontology": {
         "roles": [
           "data_module"
@@ -2427,33 +2441,20 @@
         "dataOperations": [
           {
             "operation": "write",
-            "access": "unknown",
-            "line": 20,
-            "evidence": "upsert: false,"
-          },
-          {
-            "operation": "write",
             "access": "orm",
             "entity": "media",
-            "line": 31,
+            "line": 14,
             "evidence": "return prisma.media.create({"
           }
         ],
         "security": [],
         "conventions": [],
-        "findings": [
-          {
-            "code": "multiple_writes_without_detected_transaction",
-            "severity": "low",
-            "message": "Multiple write/delete operations were detected without a transaction fact.",
-            "line": 20
-          }
-        ],
+        "findings": [],
         "links": [
           {
             "kind": "WRITES",
             "subject": "media",
-            "line": 31,
+            "line": 14,
             "evidence": "return prisma.media.create({",
             "confidence": "medium"
           }
@@ -2673,56 +2674,56 @@
         "imageResponse",
         "contentType",
         "buffer",
-        "extension",
-        "fileName"
+        "publicId",
+        "uploaded"
       ],
       "exportLines": {
-        "createInstagramCover": 45,
-        "response": 50,
-        "html": 66,
-        "imageUrl": 67,
-        "imageResponse": 75,
-        "contentType": 83,
-        "buffer": 92,
-        "extension": 100,
-        "fileName": 102
+        "createInstagramCover": 39,
+        "response": 44,
+        "html": 60,
+        "imageUrl": 61,
+        "imageResponse": 69,
+        "contentType": 77,
+        "buffer": 86,
+        "publicId": 94,
+        "uploaded": 98
       },
       "exportRanges": {
         "createInstagramCover": {
-          "startLine": 45,
-          "endLine": 131
+          "startLine": 39,
+          "endLine": 113
         },
         "response": {
-          "startLine": 50,
-          "endLine": 58
+          "startLine": 44,
+          "endLine": 52
         },
         "html": {
-          "startLine": 66,
-          "endLine": 66
+          "startLine": 60,
+          "endLine": 60
         },
         "imageUrl": {
-          "startLine": 67,
-          "endLine": 67
+          "startLine": 61,
+          "endLine": 61
         },
         "imageResponse": {
-          "startLine": 75,
-          "endLine": 75
+          "startLine": 69,
+          "endLine": 69
         },
         "contentType": {
-          "startLine": 83,
-          "endLine": 84
+          "startLine": 77,
+          "endLine": 78
         },
         "buffer": {
-          "startLine": 92,
-          "endLine": 94
+          "startLine": 86,
+          "endLine": 88
         },
-        "extension": {
-          "startLine": 100,
-          "endLine": 100
+        "publicId": {
+          "startLine": 94,
+          "endLine": 96
         },
-        "fileName": {
-          "startLine": 102,
-          "endLine": 104
+        "uploaded": {
+          "startLine": 98,
+          "endLine": 101
         }
       },
       "exportKinds": {
@@ -2733,17 +2734,17 @@
         "imageResponse": "const",
         "contentType": "const",
         "buffer": "const",
-        "extension": "const",
-        "fileName": "const"
+        "publicId": "const",
+        "uploaded": "const"
       },
       "imports": [
-        "../../config/supabase.js",
-        "../../config/prisma.js"
+        "../../config/prisma.js",
+        "../../utils/cloudinaryUpload.js"
       ],
       "language": "javascript",
-      "mtime": "2026-10-28T02:12:51.124Z",
-      "sizeBytes": 3057,
-      "mtimeMs": 1793153571124.0056,
+      "mtime": "2026-10-28T03:55:22.766Z",
+      "sizeBytes": 2662,
+      "mtimeMs": 1793159722766.6775,
       "ontology": {
         "roles": [
           "data_module"
@@ -2754,44 +2755,31 @@
           {
             "operation": "read",
             "access": "network",
-            "line": 50,
+            "line": 44,
             "evidence": "const response = await fetch(instagramUrl, {"
           },
           {
             "operation": "read",
             "access": "network",
-            "line": 75,
+            "line": 69,
             "evidence": "const imageResponse = await fetch(imageUrl);"
-          },
-          {
-            "operation": "write",
-            "access": "unknown",
-            "line": 110,
-            "evidence": "upsert: false,"
           },
           {
             "operation": "write",
             "access": "orm",
             "entity": "media",
-            "line": 121,
+            "line": 103,
             "evidence": "return prisma.media.create({"
           }
         ],
         "security": [],
         "conventions": [],
-        "findings": [
-          {
-            "code": "multiple_writes_without_detected_transaction",
-            "severity": "low",
-            "message": "Multiple write/delete operations were detected without a transaction fact.",
-            "line": 110
-          }
-        ],
+        "findings": [],
         "links": [
           {
             "kind": "WRITES",
             "subject": "media",
-            "line": 121,
+            "line": 103,
             "evidence": "return prisma.media.create({",
             "confidence": "medium"
           }
@@ -4412,6 +4400,65 @@
         ]
       }
     },
+    "/home/saul/Escritorio/web/indie-now-api/src/utils/cloudinaryUpload.js": {
+      "filePath": "/home/saul/Escritorio/web/indie-now-api/src/utils/cloudinaryUpload.js",
+      "moduleName": "src/utils/cloudinaryUpload.js",
+      "exports": [
+        "uploadBuffer",
+        "uploadStream",
+        "deleteAsset"
+      ],
+      "exportLines": {
+        "uploadBuffer": 5,
+        "uploadStream": 7,
+        "deleteAsset": 27
+      },
+      "exportRanges": {
+        "uploadBuffer": {
+          "startLine": 5,
+          "endLine": 24
+        },
+        "uploadStream": {
+          "startLine": 7,
+          "endLine": 20
+        },
+        "deleteAsset": {
+          "startLine": 27,
+          "endLine": 31
+        }
+      },
+      "exportKinds": {
+        "uploadBuffer": "const",
+        "uploadStream": "const",
+        "deleteAsset": "const"
+      },
+      "imports": [
+        "../config/cloudinary.js"
+      ],
+      "language": "javascript",
+      "mtime": "2026-10-28T03:56:14.445Z",
+      "sizeBytes": 829,
+      "mtimeMs": 1793159774445.4155,
+      "ontology": {
+        "roles": [
+          "service_module"
+        ],
+        "packageBoundary": "src/utils",
+        "routes": [],
+        "dataOperations": [
+          {
+            "operation": "delete",
+            "access": "unknown",
+            "line": 28,
+            "evidence": "return cloudinary.uploader.destroy(publicId, {"
+          }
+        ],
+        "security": [],
+        "conventions": [],
+        "findings": [],
+        "links": []
+      }
+    },
     "/home/saul/Escritorio/web/indie-now-api/src/utils/slug.js": {
       "filePath": "/home/saul/Escritorio/web/indie-now-api/src/utils/slug.js",
       "moduleName": "src/utils/slug.js",
@@ -4992,14 +5039,14 @@
     },
     {
       "source": "/home/saul/Escritorio/web/indie-now-api/src/modules/media/service.js",
-      "target": "/home/saul/Escritorio/web/indie-now-api/src/config/supabase.js",
-      "importSpecifier": "../../config/supabase.js",
-      "importType": "default",
+      "target": "/home/saul/Escritorio/web/indie-now-api/src/utils/cloudinaryUpload.js",
+      "importSpecifier": "../../utils/cloudinaryUpload.js",
+      "importType": "named",
       "importedSymbols": [
-        "default"
+        "uploadBuffer"
       ],
       "usedSymbols": [
-        "default"
+        "uploadBuffer"
       ],
       "targetKind": "node"
     },
@@ -5069,14 +5116,14 @@
     },
     {
       "source": "/home/saul/Escritorio/web/indie-now-api/src/modules/news/instagram.js",
-      "target": "/home/saul/Escritorio/web/indie-now-api/src/config/supabase.js",
-      "importSpecifier": "../../config/supabase.js",
-      "importType": "default",
+      "target": "/home/saul/Escritorio/web/indie-now-api/src/utils/cloudinaryUpload.js",
+      "importSpecifier": "../../utils/cloudinaryUpload.js",
+      "importType": "named",
       "importedSymbols": [
-        "default"
+        "uploadBuffer"
       ],
       "usedSymbols": [
-        "default"
+        "uploadBuffer"
       ],
       "targetKind": "node"
     },
@@ -5425,13 +5472,26 @@
         "default"
       ],
       "targetKind": "node"
+    },
+    {
+      "source": "/home/saul/Escritorio/web/indie-now-api/src/utils/cloudinaryUpload.js",
+      "target": "/home/saul/Escritorio/web/indie-now-api/src/config/cloudinary.js",
+      "importSpecifier": "../config/cloudinary.js",
+      "importType": "default",
+      "importedSymbols": [
+        "default"
+      ],
+      "usedSymbols": [
+        "default"
+      ],
+      "targetKind": "node"
     }
   ],
   "metadata": {
-    "generatedAt": "2026-10-28T03:54:17.397Z",
+    "generatedAt": "2026-10-28T21:01:58.699Z",
     "generator": "repo-graph",
-    "nodeCount": 42,
-    "edgeCount": 59
+    "nodeCount": 43,
+    "edgeCount": 60
   },
   "repoRootId": "indie-now-api",
   "symbolEdges": [
@@ -6758,19 +6818,19 @@
     {
       "fromFile": "/home/saul/Escritorio/web/indie-now-api/src/modules/media/service.js",
       "fromSymbol": "createImageMedia",
-      "toFile": "/home/saul/Escritorio/web/indie-now-api/src/config/supabase.js",
-      "toSymbol": "default",
+      "toFile": "/home/saul/Escritorio/web/indie-now-api/src/utils/cloudinaryUpload.js",
+      "toSymbol": "uploadBuffer",
       "fromId": "af913a0663cab654451f76e3ed8dbf750c2f1baed49713792deab0eb91a8ddde",
-      "toId": "3e348b83a0d322721b7d18921320075d5e54f6d72940f2d2dee1ef8059bb553c",
-      "id": "4b195007c972890c2cd623500524083491ea5aa3d4edeed3826e66e1fbf917f6",
+      "toId": "9d9ac5043e5939116953ce11d4a35800ee05a314580d7ab8d21651439b9da965",
+      "id": "7e7ad611d2accf55f81fd984ce66d3a390a702696d6e293afda8446cc635bf13",
       "kind": "REFERENCES",
       "confidence": 0.9,
       "resolution": "import_binding",
       "evidence": [
         {
           "file": "src/modules/media/service.js",
-          "line": 16,
-          "snippetHash": "dd92a56f0d9c4bd770b8409bb53eaab27dc5774d559ec3a7383c2a853afd943a",
+          "line": 9,
+          "snippetHash": "5bed5d62f099526628af3d26fd663734e8fd75c4ec5d09001199d0a0020a39cd",
           "extractor": "tree-sitter/javascript"
         }
       ]
@@ -6789,7 +6849,7 @@
       "evidence": [
         {
           "file": "src/modules/media/service.js",
-          "line": 31,
+          "line": 14,
           "snippetHash": "da51fbddbc6d92ac05160f84318296f2785c1193daf416d6cb4939abdfff158a",
           "extractor": "tree-sitter/javascript"
         }
@@ -6998,19 +7058,19 @@
     {
       "fromFile": "/home/saul/Escritorio/web/indie-now-api/src/modules/news/instagram.js",
       "fromSymbol": "createInstagramCover",
-      "toFile": "/home/saul/Escritorio/web/indie-now-api/src/config/supabase.js",
-      "toSymbol": "default",
+      "toFile": "/home/saul/Escritorio/web/indie-now-api/src/utils/cloudinaryUpload.js",
+      "toSymbol": "uploadBuffer",
       "fromId": "0dc267e0aafa68beae5a58176b227aa60d4687cfdcfaca86286b956e72b2dc6c",
-      "toId": "3e348b83a0d322721b7d18921320075d5e54f6d72940f2d2dee1ef8059bb553c",
-      "id": "8bd8b5f5f8d694876b9147cef98e1fb7c2e2ad95cf092a1253e0fdb31f4be196",
+      "toId": "9d9ac5043e5939116953ce11d4a35800ee05a314580d7ab8d21651439b9da965",
+      "id": "e18b705f9002fa92c390da3011740661c64ca7a0d24c70717f89d9b5f2e8518c",
       "kind": "REFERENCES",
       "confidence": 0.9,
       "resolution": "import_binding",
       "evidence": [
         {
           "file": "src/modules/news/instagram.js",
-          "line": 106,
-          "snippetHash": "dd92a56f0d9c4bd770b8409bb53eaab27dc5774d559ec3a7383c2a853afd943a",
+          "line": 98,
+          "snippetHash": "424cd0d77389c9e6c5bc0c303df2d35ed0a12777290d5dc427eaae38291a9f53",
           "extractor": "tree-sitter/javascript"
         }
       ]
@@ -7029,7 +7089,7 @@
       "evidence": [
         {
           "file": "src/modules/news/instagram.js",
-          "line": 121,
+          "line": 103,
           "snippetHash": "da51fbddbc6d92ac05160f84318296f2785c1193daf416d6cb4939abdfff158a",
           "extractor": "tree-sitter/javascript"
         }
@@ -8494,6 +8554,46 @@
           "extractor": "tree-sitter/javascript"
         }
       ]
+    },
+    {
+      "fromFile": "/home/saul/Escritorio/web/indie-now-api/src/utils/cloudinaryUpload.js",
+      "fromSymbol": "uploadBuffer",
+      "toFile": "/home/saul/Escritorio/web/indie-now-api/src/config/cloudinary.js",
+      "toSymbol": "default",
+      "fromId": "9d9ac5043e5939116953ce11d4a35800ee05a314580d7ab8d21651439b9da965",
+      "toId": "d9e9e2226b66f75a8abaad3d1462614135dac01def3a45fb65a5633fe49a8853",
+      "id": "e0f2d6147ef73e0ca1c9d867b398e5edb4ffc583c56d321eaa4d10a06e218544",
+      "kind": "REFERENCES",
+      "confidence": 0.9,
+      "resolution": "import_binding",
+      "evidence": [
+        {
+          "file": "src/utils/cloudinaryUpload.js",
+          "line": 7,
+          "snippetHash": "04a51b531fe82f98e64fe09acd5d6fd48868e6b8b1a28737be0d5025e73d6447",
+          "extractor": "tree-sitter/javascript"
+        }
+      ]
+    },
+    {
+      "fromFile": "/home/saul/Escritorio/web/indie-now-api/src/utils/cloudinaryUpload.js",
+      "fromSymbol": "deleteAsset",
+      "toFile": "/home/saul/Escritorio/web/indie-now-api/src/config/cloudinary.js",
+      "toSymbol": "default",
+      "fromId": "7d88ebb41e26b1873bb25f222455119bdeb5dc06fb3c2fc3f59840dcbebf2449",
+      "toId": "d9e9e2226b66f75a8abaad3d1462614135dac01def3a45fb65a5633fe49a8853",
+      "id": "9c1834b934e4a2563fadae33a6a3fa8006fc825725f2156f4923a2f01c17828d",
+      "kind": "REFERENCES",
+      "confidence": 0.9,
+      "resolution": "import_binding",
+      "evidence": [
+        {
+          "file": "src/utils/cloudinaryUpload.js",
+          "line": 28,
+          "snippetHash": "687d76f9d888412bf251ea8c4ce0b52d84af0480a9bf918cc276d8ca72d24fd2",
+          "extractor": "tree-sitter/javascript"
+        }
+      ]
     }
   ],
   "diagnostics": {
@@ -8508,8 +8608,8 @@
       {
         "file": "package.json",
         "kind": "manifest",
-        "sizeBytes": 794,
-        "mtimeMs": 1793157215929.968
+        "sizeBytes": 782,
+        "mtimeMs": 1793159734706.617
       }
     ],
     "lowConfidenceEdgeCount": 0,

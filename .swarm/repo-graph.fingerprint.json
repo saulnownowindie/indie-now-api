@@ -4,8 +4,8 @@
   "exclusionStamp": "cceddb84f07166eb48fa3314cdb4ef68e65c367692eed22b40d7163525bc2198",
   "files": {
     "package.json": {
-      "size": 794,
-      "mtimeMs": 1793157215929.968
+      "size": 782,
+      "mtimeMs": 1793159734706.617
     },
     "prisma/hashPassword.js": {
       "size": 132,
@@ -19,12 +19,12 @@
       "size": 1422,
       "mtimeMs": 1793153571123.0056
     },
+    "src/config/cloudinary.js": {
+      "size": 257,
+      "mtimeMs": 1793159712170.7312
+    },
     "src/config/prisma.js": {
       "size": 106,
-      "mtimeMs": 1793153571123.0056
-    },
-    "src/config/supabase.js": {
-      "size": 178,
       "mtimeMs": 1793153571123.0056
     },
     "src/integrations/spotify/parser.js": {
@@ -44,8 +44,8 @@
       "mtimeMs": 1793153571124.0056
     },
     "src/middlewares/upload.middleware.js": {
-      "size": 445,
-      "mtimeMs": 1793153571124.0056
+      "size": 444,
+      "mtimeMs": 1793160069338.0432
     },
     "src/modules/auth/controller.js": {
       "size": 1026,
@@ -104,8 +104,8 @@
       "mtimeMs": 1793153571124.0056
     },
     "src/modules/media/service.js": {
-      "size": 913,
-      "mtimeMs": 1793153571124.0056
+      "size": 609,
+      "mtimeMs": 1793159722740.6775
     },
     "src/modules/media/validation.js": {
       "size": 223,
@@ -116,8 +116,8 @@
       "mtimeMs": 1793153571124.0056
     },
     "src/modules/news/instagram.js": {
-      "size": 3057,
-      "mtimeMs": 1793153571124.0056
+      "size": 2662,
+      "mtimeMs": 1793159722766.6775
     },
     "src/modules/news/routes.js": {
       "size": 571,
@@ -166,6 +166,10 @@
     "src/server.js": {
       "size": 414,
       "mtimeMs": 1793157309290.13
+    },
+    "src/utils/cloudinaryUpload.js": {
+      "size": 829,
+      "mtimeMs": 1793159774445.4155
     },
     "src/utils/slug.js": {
       "size": 470,

@@ -1,7 +1,7 @@
 import prisma from "../../config/prisma.js";
 import { deleteAsset, uploadBuffer } from "../../utils/cloudinaryUpload.js";
 
-const FOLDER = "news-covers";
+const DEFAULT_FOLDER = "news-covers";
 
 export const getAllMedia = async () => {
   return prisma.media.findMany({
@@ -17,11 +17,11 @@ export const getMediaById = async (id) => {
   });
 };
 
-export const createImageMedia = async (file) => {
+export const createImageMedia = async (file, folder = DEFAULT_FOLDER) => {
   const publicId = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
 
   const uploaded = await uploadBuffer(file.buffer, {
-    folder: FOLDER,
+    folder,
     public_id: publicId,
   });
 

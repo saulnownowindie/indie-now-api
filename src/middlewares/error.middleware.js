@@ -1,4 +1,5 @@
 import { ZodError } from "zod";
+import multer from "multer";
 import { Prisma } from "@prisma/client";
 
 export const errorHandler = (err, req, res, next) => {
@@ -6,6 +7,21 @@ export const errorHandler = (err, req, res, next) => {
 
   if (Number.isInteger(err.statusCode)) {
     return res.status(err.statusCode).json({
+      message: err.message,
+    });
+  }
+
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({
+      message:
+        err.code === "LIMIT_FILE_SIZE"
+          ? "La imagen supera los 4MB."
+          : err.message,
+    });
+  }
+
+  if (err.message?.startsWith("Formato de archivo")) {
+    return res.status(400).json({
       message: err.message,
     });
   }
