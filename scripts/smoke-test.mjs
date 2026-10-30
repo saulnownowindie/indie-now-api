@@ -46,6 +46,7 @@ const protectedPosts = [
   "/api/playlists",
   "/api/categories",
   "/api/media",
+  "/api/media/signature",
   "/api/reels",
   "/api/merch",
   "/api/utils/extract-cover",

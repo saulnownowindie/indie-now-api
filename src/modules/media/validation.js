@@ -29,6 +29,17 @@ export const updateMediaSchema = z
     message: "Debes enviar al menos un campo para actualizar",
   });
 
+export const uploadSignatureSchema = z
+  .object({
+    resourceType: z.enum(["image", "video"], {
+      message: "El tipo de recurso no es válido",
+    }),
+    folder: z.enum(["reels-covers", "reels-previews"], {
+      message: "La carpeta de destino no es válida",
+    }),
+  })
+  .strict();
+
 export const mediaIdParamsSchema = z.object({
   id: z.coerce
     .number()

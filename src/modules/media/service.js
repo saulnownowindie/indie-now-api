@@ -1,7 +1,45 @@
+import crypto from "node:crypto";
+
 import prisma from "../../config/prisma.js";
 import { deleteAsset, uploadBuffer } from "../../utils/cloudinaryUpload.js";
 
 const DEFAULT_FOLDER = "news-covers";
+
+// Firma de subida directa desde el navegador a Cloudinary.
+// El archivo nunca pasa por Vercel: solo se firma la operación.
+export const createUploadSignature = ({ resourceType, folder }) => {
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+  const apiKey = process.env.CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+  if (!cloudName || !apiKey || !apiSecret) {
+    const error = new Error(
+      "Cloudinary no está configurado en el servidor.",
+    );
+    error.statusCode = 503;
+    throw error;
+  }
+
+  const timestamp = Math.floor(Date.now() / 1000);
+  const params = { folder, timestamp };
+  const toSign = Object.keys(params)
+    .sort()
+    .map((key) => `${key}=${params[key]}`)
+    .join("&");
+  const signature = crypto
+    .createHash("sha1")
+    .update(`${toSign}${apiSecret}`)
+    .digest("hex");
+
+  return {
+    cloudName,
+    apiKey,
+    timestamp,
+    signature,
+    folder,
+    resourceType,
+  };
+};
 
 export const getAllMedia = async () => {
   return prisma.media.findMany({

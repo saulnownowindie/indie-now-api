@@ -1,5 +1,6 @@
 import {
   createImageMedia,
+  createUploadSignature,
   deleteMedia,
   getAllMedia,
   getMediaById,
@@ -9,6 +10,7 @@ import {
   mediaFileSchema,
   mediaIdParamsSchema,
   updateMediaSchema,
+  uploadSignatureSchema,
 } from "./validation.js";
 
 // Lista blanca: el cliente solo elige la clave, nunca el nombre real de la carpeta.
@@ -62,6 +64,17 @@ export const uploadMedia = async (req, res, next) => {
       message: "Archivo subido correctamente.",
       media,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const postUploadSignature = async (req, res, next) => {
+  try {
+    const data = uploadSignatureSchema.parse(req.body);
+    const signature = createUploadSignature(data);
+
+    res.json(signature);
   } catch (error) {
     next(error);
   }
