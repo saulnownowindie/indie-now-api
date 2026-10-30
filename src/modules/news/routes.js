@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   getNews,
   getNewsBySlugController,
+  getPublicNewsController,
   postNews,
   putNews,
   removeNews,
@@ -13,6 +14,7 @@ import { authenticate } from "../../middlewares/auth.middleware.js";
 const router = Router();
 
 router.get("/", getNews);
+router.get("/public", getPublicNewsController);
 router.post(
   "/instagram-cover",
   authenticate,

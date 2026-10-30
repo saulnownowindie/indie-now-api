@@ -34,6 +34,17 @@ export const getAllNews = async () => {
   });
 };
 
+export const getPublicNews = async () => {
+  return prisma.news.findMany({
+    where: {
+      status: "PUBLISHED",
+      isVisible: true,
+    },
+    include: newsInclude,
+    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+  });
+};
+
 export const getNewsBySlug = async (slug) => {
   return prisma.news.findUnique({
     where: { slug },

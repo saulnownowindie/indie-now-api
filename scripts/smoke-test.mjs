@@ -10,12 +10,14 @@ const { port } = server.address();
 const endpoints = [
   "/api/health",
   "/api/news",
+  "/api/news/public",
   "/api/videos",
   "/api/live-sessions",
   "/api/playlists",
   "/api/categories",
   "/api/media",
   "/api/reels",
+  "/api/reels/public",
   "/api/merch",
 ];
 

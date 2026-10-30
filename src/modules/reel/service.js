@@ -33,6 +33,17 @@ export const getAllReels = async () => {
   });
 };
 
+export const getPublicReels = async () => {
+  return prisma.reel.findMany({
+    where: {
+      status: "PUBLISHED",
+      isVisible: true,
+    },
+    include: reelInclude,
+    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+  });
+};
+
 export const getFeaturedReels = async () => {
   return prisma.reel.findMany({
     where: {

@@ -3,6 +3,7 @@ import {
   deleteReel,
   getAllReels,
   getFeaturedReels,
+  getPublicReels,
   getReelBySlug,
   updateReel,
 } from "./service.js";
@@ -15,6 +16,16 @@ import {
 export const getReels = async (req, res, next) => {
   try {
     const reels = await getAllReels();
+
+    res.json(reels);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getPublicReelsController = async (req, res, next) => {
+  try {
+    const reels = await getPublicReels();
 
     res.json(reels);
   } catch (error) {
