@@ -136,6 +136,11 @@ model Reel {
   platform       SocialPlatform
   url            String
   videoUrl       String?
+  previewUrl     String?
+  posterUrl      String?
+  previewStart   Float          @default(1)
+  previewStatus  String?
+  processingAt   DateTime?
   coverImageId   Int?
   coverUrl       String?
   featured       Boolean        @default(false)

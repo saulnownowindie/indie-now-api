@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "Reel" ADD COLUMN "previewUrl" TEXT,
+ADD COLUMN "posterUrl" TEXT,
+ADD COLUMN "previewStart" DOUBLE PRECISION NOT NULL DEFAULT 1,
+ADD COLUMN "previewStatus" TEXT,
+ADD COLUMN "processingAt" TIMESTAMP(3);

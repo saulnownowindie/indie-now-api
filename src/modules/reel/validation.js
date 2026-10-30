@@ -34,6 +34,19 @@ export const createReelSchema = z
       .url("La URL del video no es válida")
       .nullable()
       .optional(),
+    previewUrl: z
+      .url("La URL del preview no es válida")
+      .nullable()
+      .optional(),
+    posterUrl: z
+      .url("La URL del poster no es válida")
+      .nullable()
+      .optional(),
+    previewStart: z.coerce
+      .number()
+      .min(0, "El inicio del preview no puede ser negativo")
+      .max(600, "El inicio del preview no puede superar los 600 segundos")
+      .optional(),
     coverImageId: z.coerce
       .number()
       .int("La portada debe ser un número entero")
@@ -85,3 +98,20 @@ export const reelIdParamsSchema = z.object({
     .int("El identificador debe ser un número entero")
     .positive("El identificador debe ser válido"),
 });
+
+export const requestPreviewSchema = z
+  .object({
+    previewStart: z.coerce
+      .number()
+      .min(0, "El inicio no puede ser negativo")
+      .max(600, "El inicio no puede superar los 600 segundos")
+      .optional(),
+    regenerate: z.boolean().optional(),
+  })
+  .strict();
+
+export const coverFromUrlSchema = z
+  .object({
+    url: z.url("La URL no es válida"),
+  })
+  .strict();

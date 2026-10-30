@@ -5,13 +5,17 @@ import {
   getFeaturedReels,
   getPublicReels,
   getReelBySlug,
+  requestReelPreview,
   updateReel,
 } from "./service.js";
 import {
+  coverFromUrlSchema,
   createReelSchema,
   reelIdParamsSchema,
+  requestPreviewSchema,
   updateReelSchema,
 } from "./validation.js";
+import { getCoverFromSocialUrl } from "./cover.js";
 import { parseHomeSection } from "../../utils/homeSections.js";
 
 export const getReels = async (req, res, next) => {
@@ -100,6 +104,41 @@ export const removeReel = async (req, res, next) => {
     res.json({
       message: "Reel eliminado correctamente",
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const postReelCoverFromUrl = async (req, res, next) => {
+  try {
+    const { url } = coverFromUrlSchema.parse(req.body);
+    const result = await getCoverFromSocialUrl(url);
+
+    if (result.manual) {
+      return res.json({
+        manual: true,
+        message:
+          "Instagram ya no expone miniaturas. Subí la portada manualmente.",
+      });
+    }
+
+    res.status(201).json({
+      manual: false,
+      message: "Portada obtenida correctamente.",
+      ...result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const postReelRequestPreview = async (req, res, next) => {
+  try {
+    const { id } = reelIdParamsSchema.parse(req.params);
+    const data = requestPreviewSchema.parse(req.body);
+    const reel = await requestReelPreview(id, data);
+
+    res.json(reel);
   } catch (error) {
     next(error);
   }
