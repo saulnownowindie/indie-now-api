@@ -34,9 +34,12 @@ export const uploadSignatureSchema = z
     resourceType: z.enum(["image", "video"], {
       message: "El tipo de recurso no es válido",
     }),
-    folder: z.enum(["reels-covers", "reels-previews"], {
-      message: "La carpeta de destino no es válida",
-    }),
+    folder: z.enum(
+      ["reels-covers", "reels-previews", "playlist-covers"],
+      {
+        message: "La carpeta de destino no es válida",
+      },
+    ),
   })
   .strict();
 

@@ -211,13 +211,14 @@ model Playlist {
   updatedAt         DateTime      @updatedAt
   authorId          Int
   coverUrl          String?
+  url               String?       @unique
   description       String?
   ownerName         String?
   sortOrder         Int           @default(0)
-  spotifyId         String        @unique
+  spotifyId         String?       @unique
   spotifySnapshotId String?
-  spotifySyncedAt   DateTime
-  spotifyUrl        String        @unique
+  spotifySyncedAt   DateTime?
+  spotifyUrl        String?       @unique
   tracksCount       Int?
   author            User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
@@ -252,6 +253,7 @@ enum SocialPlatform {
 enum MusicPlatform {
   SPOTIFY
   YOUTUBE_MUSIC
+  TIKTOK
   APPLE_MUSIC
   DEEZER
   TIDAL

@@ -74,12 +74,43 @@ export const getPlaylistBySlug = async (slug) => {
 };
 
 export const createPlaylist = async (data, authorId) => {
+  if (!data.spotifyUrl) {
+    const title = data.title?.trim();
+    const slug = await getUniqueSlug(title);
+    const status = data.status ?? "DRAFT";
+
+    return prisma.playlist.create({
+      data: {
+        title,
+        slug,
+        platform: data.platform,
+        url: data.url,
+        coverUrl: data.coverUrl ?? null,
+        description: data.description ?? null,
+        ownerName: data.ownerName ?? null,
+        tracksCount: data.tracksCount ?? null,
+        featured: data.featured ?? false,
+        isVisible: data.isVisible ?? true,
+        seoTitle: data.seoTitle ?? null,
+        seoDescription: data.seoDescription ?? null,
+        sortOrder: data.sortOrder ?? 0,
+        status,
+        publishedAt:
+          data.publishedAt ??
+          (status === "PUBLISHED" ? new Date() : null),
+        authorId,
+      },
+      include: playlistInclude,
+    });
+  }
+
   const spotifyData = await getSpotifyData(data.spotifyUrl);
   const slug = await getUniqueSlug(spotifyData.title);
 
   return prisma.playlist.create({
     data: {
       ...spotifyData,
+      url: spotifyData.spotifyUrl,
       slug,
       platform: "SPOTIFY",
       authorId,
@@ -89,9 +120,22 @@ export const createPlaylist = async (data, authorId) => {
 };
 
 export const updatePlaylist = async (id, data) => {
+  const payload = { ...data };
+
+  if (payload.status === "PUBLISHED" && payload.publishedAt === undefined) {
+    const existing = await prisma.playlist.findUnique({
+      where: { id },
+      select: { publishedAt: true },
+    });
+
+    if (!existing?.publishedAt) {
+      payload.publishedAt = new Date();
+    }
+  }
+
   return prisma.playlist.update({
     where: { id },
-    data,
+    data: payload,
     include: playlistInclude,
   });
 };
@@ -106,11 +150,22 @@ export const syncPlaylist = async (id) => {
     return null;
   }
 
+  if (!playlist.spotifyUrl) {
+    const error = new Error(
+      "Solo las playlists de Spotify se pueden sincronizar.",
+    );
+    error.statusCode = 400;
+    throw error;
+  }
+
   const spotifyData = await getSpotifyData(playlist.spotifyUrl);
 
   return prisma.playlist.update({
     where: { id },
-    data: spotifyData,
+    data: {
+      ...spotifyData,
+      url: spotifyData.spotifyUrl,
+    },
     include: playlistInclude,
   });
 };
