@@ -37,8 +37,9 @@ const withPreviewStatus = (data, existing = {}) => {
     return {};
   }
 
-  const previewUrl = data.previewUrl ?? existing.previewUrl;
-  const posterUrl = data.posterUrl ?? existing.posterUrl;
+  const current = existing || {};
+  const previewUrl = data.previewUrl ?? current.previewUrl;
+  const posterUrl = data.posterUrl ?? current.posterUrl;
 
   if (previewUrl && posterUrl) {
     return { previewStatus: "ready", processingAt: null };
