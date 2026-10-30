@@ -135,6 +135,7 @@ model Reel {
   slug           String         @unique
   platform       SocialPlatform
   url            String
+  videoUrl       String?
   coverImageId   Int?
   coverUrl       String?
   featured       Boolean        @default(false)

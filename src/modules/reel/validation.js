@@ -30,6 +30,10 @@ export const createReelSchema = z
       message: "La plataforma seleccionada no es válida",
     }),
     url: z.url("La URL no es válida"),
+    videoUrl: z
+      .url("La URL del video no es válida")
+      .nullable()
+      .optional(),
     coverImageId: z.coerce
       .number()
       .int("La portada debe ser un número entero")
