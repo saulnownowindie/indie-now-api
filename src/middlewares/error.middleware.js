@@ -2,6 +2,16 @@ import { ZodError } from "zod";
 import multer from "multer";
 import { Prisma } from "@prisma/client";
 
+import { MAX_UPLOAD_SIZE } from "./upload.middleware.js";
+
+const MAX_UPLOAD_MB = Math.round(MAX_UPLOAD_SIZE / (1024 * 1024));
+
+const MULTER_MESSAGES = {
+  LIMIT_FILE_SIZE: `La imagen supera los ${MAX_UPLOAD_MB}MB.`,
+  LIMIT_FILE_COUNT: "Solo se permite subir un archivo a la vez.",
+  LIMIT_UNEXPECTED_FILE: 'El archivo debe enviarse en el campo "file".',
+};
+
 export const errorHandler = (err, req, res, next) => {
   console.error(err);
 
@@ -13,10 +23,7 @@ export const errorHandler = (err, req, res, next) => {
 
   if (err instanceof multer.MulterError) {
     return res.status(400).json({
-      message:
-        err.code === "LIMIT_FILE_SIZE"
-          ? "La imagen supera los 4MB."
-          : err.message,
+      message: MULTER_MESSAGES[err.code] ?? err.message,
     });
   }
 
