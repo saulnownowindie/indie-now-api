@@ -61,6 +61,8 @@ model News {
   seoDescription String?
   status         PublishStatus  @default(DRAFT)
   publishedAt    DateTime?
+  homeSection    HomeSection    @default(NOTICIAS)
+  sortOrder      Int            @default(0)
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   authorId       Int
@@ -74,6 +76,7 @@ model News {
   @@index([publishedAt])
   @@index([categoryId])
   @@index([authorId])
+  @@index([homeSection, sortOrder])
 }
 
 model LiveSession {
@@ -139,6 +142,8 @@ model Reel {
   seoDescription String?
   status         PublishStatus  @default(DRAFT)
   publishedAt    DateTime?
+  homeSection    HomeSection    @default(REELS)
+  sortOrder      Int            @default(0)
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   authorId       Int
@@ -149,6 +154,7 @@ model Reel {
   @@index([publishedAt])
   @@index([authorId])
   @@index([status, isVisible, featured])
+  @@index([homeSection, sortOrder])
 }
 
 model Merch {
@@ -217,6 +223,13 @@ model Playlist {
 enum PublishStatus {
   DRAFT
   PUBLISHED
+}
+
+enum HomeSection {
+  LO_NUEVO
+  NOTICIAS
+  REELS
+  NO_PODES_PERDERTE
 }
 
 enum SocialPlatform {

@@ -12,6 +12,7 @@ import {
   newsIdParamsSchema,
   updateNewsSchema,
 } from "./validation.js";
+import { parseHomeSection } from "../../utils/homeSections.js";
 
 export const getNews = async (req, res, next) => {
   try {
@@ -25,7 +26,15 @@ export const getNews = async (req, res, next) => {
 
 export const getPublicNewsController = async (req, res, next) => {
   try {
-    const news = await getPublicNews();
+    const section = parseHomeSection(req.query.section);
+
+    if (req.query.section && !section) {
+      return res.status(400).json({
+        message: "La sección indicada no es válida.",
+      });
+    }
+
+    const news = await getPublicNews(section);
 
     res.json(news);
   } catch (error) {

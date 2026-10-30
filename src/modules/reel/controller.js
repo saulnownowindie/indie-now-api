@@ -12,6 +12,7 @@ import {
   reelIdParamsSchema,
   updateReelSchema,
 } from "./validation.js";
+import { parseHomeSection } from "../../utils/homeSections.js";
 
 export const getReels = async (req, res, next) => {
   try {
@@ -25,7 +26,15 @@ export const getReels = async (req, res, next) => {
 
 export const getPublicReelsController = async (req, res, next) => {
   try {
-    const reels = await getPublicReels();
+    const section = parseHomeSection(req.query.section);
+
+    if (req.query.section && !section) {
+      return res.status(400).json({
+        message: "La sección indicada no es válida.",
+      });
+    }
+
+    const reels = await getPublicReels(section);
 
     res.json(reels);
   } catch (error) {

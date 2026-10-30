@@ -11,6 +11,7 @@ const endpoints = [
   "/api/health",
   "/api/news",
   "/api/news/public",
+  "/api/news/public?section=NOTICIAS",
   "/api/videos",
   "/api/live-sessions",
   "/api/playlists",
@@ -18,6 +19,7 @@ const endpoints = [
   "/api/media",
   "/api/reels",
   "/api/reels/public",
+  "/api/reels/public?section=REELS",
   "/api/merch",
 ];
 

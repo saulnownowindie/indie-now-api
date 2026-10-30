@@ -34,14 +34,19 @@ export const getAllNews = async () => {
   });
 };
 
-export const getPublicNews = async () => {
+export const getPublicNews = async (section) => {
   return prisma.news.findMany({
     where: {
       status: "PUBLISHED",
       isVisible: true,
+      ...(section ? { homeSection: section } : {}),
     },
     include: newsInclude,
-    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+    orderBy: [
+      { sortOrder: "asc" },
+      { publishedAt: "desc" },
+      { createdAt: "desc" },
+    ],
   });
 };
 

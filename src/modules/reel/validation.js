@@ -12,6 +12,13 @@ const socialPlatforms = [
 
 const publishStatuses = ["DRAFT", "PUBLISHED"];
 
+const homeSections = [
+  "LO_NUEVO",
+  "NOTICIAS",
+  "REELS",
+  "NO_PODES_PERDERTE",
+];
+
 export const createReelSchema = z
   .object({
     title: z
@@ -50,6 +57,14 @@ export const createReelSchema = z
     status: z.enum(publishStatuses, {
       message: "El estado seleccionado no es válido",
     }).optional(),
+    homeSection: z.enum(homeSections, {
+      message: "La sección de la Home no es válida",
+    }).optional(),
+    sortOrder: z.coerce
+      .number()
+      .int("El orden debe ser un número entero")
+      .min(0, "El orden no puede ser negativo")
+      .optional(),
     publishedAt: z.coerce.date().nullable().optional(),
   })
   .strict();
