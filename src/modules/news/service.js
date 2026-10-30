@@ -42,6 +42,7 @@ export const getPublicNews = async (section) => {
       ...(section ? { homeSection: section } : {}),
     },
     include: newsInclude,
+    omit: { content: true },
     orderBy: [
       { sortOrder: "asc" },
       { publishedAt: "desc" },

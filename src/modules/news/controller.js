@@ -46,7 +46,11 @@ export const getNewsBySlugController = async (req, res, next) => {
   try {
     const news = await getNewsBySlug(req.params.slug);
 
-    if (!news) {
+    if (
+      !news ||
+      news.status !== "PUBLISHED" ||
+      !news.isVisible
+    ) {
       return res.status(404).json({
         message: "Noticia no encontrada",
       });

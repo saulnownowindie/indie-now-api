@@ -53,6 +53,7 @@ model News {
   id             Int            @id @default(autoincrement())
   title          String
   slug           String         @unique
+  content        String?        @db.Text
   platform       SocialPlatform
   url            String
   featured       Boolean        @default(false)

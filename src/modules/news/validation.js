@@ -26,6 +26,12 @@ export const createNewsSchema = z
       .trim()
       .min(5, "El título debe tener al menos 5 caracteres")
       .max(150, "El título no puede superar los 150 caracteres"),
+    content: z
+      .string()
+      .trim()
+      .max(50000, "El contenido no puede superar los 50.000 caracteres")
+      .nullable()
+      .optional(),
     platform: z.enum(socialPlatforms, {
       message: "La plataforma seleccionada no es válida",
     }),
