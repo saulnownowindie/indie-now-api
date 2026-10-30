@@ -12,6 +12,7 @@ import newsRoutes from "./modules/news/routes.js";
 import playlistRoutes from "./modules/playlist/routes.js";
 import reelRoutes from "./modules/reel/routes.js";
 import videoRoutes from "./modules/video/routes.js";
+import utilsRoutes from "./modules/utils/routes.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -44,6 +45,7 @@ app.use("/api/news", newsRoutes);
 app.use("/api/playlists", playlistRoutes);
 app.use("/api/reels", reelRoutes);
 app.use("/api/videos", videoRoutes);
+app.use("/api/utils", utilsRoutes);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

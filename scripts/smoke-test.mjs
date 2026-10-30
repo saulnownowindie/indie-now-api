@@ -43,6 +43,7 @@ const protectedPosts = [
   "/api/media",
   "/api/reels",
   "/api/merch",
+  "/api/utils/extract-cover",
 ];
 
 for (const endpoint of protectedPosts) {

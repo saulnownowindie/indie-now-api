@@ -1,5 +1,6 @@
 import prisma from "../../config/prisma.js";
 import { generateUniqueSlug } from "../../utils/slug.js";
+import { getSocialEmbedUrl } from "../../utils/socialEmbed.js";
 
 const reelInclude = {
   coverImage: true,
@@ -11,6 +12,11 @@ const reelInclude = {
     },
   },
 };
+
+const withEmbed = (reel) => ({
+  ...reel,
+  embedUrl: getSocialEmbedUrl(reel.url, reel.platform),
+});
 
 const getUniqueSlug = async (title, excludedId) => {
   return generateUniqueSlug(title, {
@@ -27,14 +33,16 @@ const getUniqueSlug = async (title, excludedId) => {
 };
 
 export const getAllReels = async () => {
-  return prisma.reel.findMany({
+  const reels = await prisma.reel.findMany({
     include: reelInclude,
     orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
   });
+
+  return reels.map(withEmbed);
 };
 
 export const getPublicReels = async (section) => {
-  return prisma.reel.findMany({
+  const reels = await prisma.reel.findMany({
     where: {
       status: "PUBLISHED",
       isVisible: true,
@@ -47,10 +55,12 @@ export const getPublicReels = async (section) => {
       { createdAt: "desc" },
     ],
   });
+
+  return reels.map(withEmbed);
 };
 
 export const getFeaturedReels = async () => {
-  return prisma.reel.findMany({
+  const reels = await prisma.reel.findMany({
     where: {
       featured: true,
       isVisible: true,
@@ -59,19 +69,23 @@ export const getFeaturedReels = async () => {
     include: reelInclude,
     orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
   });
+
+  return reels.map(withEmbed);
 };
 
 export const getReelBySlug = async (slug) => {
-  return prisma.reel.findUnique({
+  const reel = await prisma.reel.findUnique({
     where: { slug },
     include: reelInclude,
   });
+
+  return reel ? withEmbed(reel) : null;
 };
 
 export const createReel = async (data, authorId) => {
   const slug = await getUniqueSlug(data.title);
 
-  return prisma.reel.create({
+  const reel = await prisma.reel.create({
     data: {
       ...data,
       slug,
@@ -79,12 +93,14 @@ export const createReel = async (data, authorId) => {
     },
     include: reelInclude,
   });
+
+  return withEmbed(reel);
 };
 
 export const updateReel = async (id, data) => {
   const slug = data.title ? await getUniqueSlug(data.title, id) : undefined;
 
-  return prisma.reel.update({
+  const reel = await prisma.reel.update({
     where: { id },
     data: {
       ...data,
@@ -92,6 +108,8 @@ export const updateReel = async (id, data) => {
     },
     include: reelInclude,
   });
+
+  return withEmbed(reel);
 };
 
 export const deleteReel = async (id) => {
