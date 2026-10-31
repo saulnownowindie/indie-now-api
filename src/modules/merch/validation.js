@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const publishStatuses = ["DRAFT", "PUBLISHED"];
+const iconOptions = ["Music", "Shirt", "Star", "Disc"];
 
 const merchDetailSchema = z
   .object({
@@ -56,6 +57,10 @@ export const createMerchSchema = z
       .number()
       .int("La portada debe ser un número entero")
       .positive("La portada debe ser válida")
+      .nullable()
+      .optional(),
+    icon: z
+      .enum(iconOptions, { message: "El ícono seleccionado no es válido" })
       .nullable()
       .optional(),
     featured: z.boolean().optional(),

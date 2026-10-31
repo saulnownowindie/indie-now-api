@@ -2,6 +2,7 @@ import { z } from "zod";
 import { isValidSpotifyPlaylistUrl } from "../../integrations/spotify/parser.js";
 
 const publishStatuses = ["DRAFT", "PUBLISHED"];
+const iconOptions = ["Music", "Shirt", "Star", "Disc"];
 
 const playlistPlatforms = ["SPOTIFY", "YOUTUBE_MUSIC", "TIKTOK"];
 
@@ -36,6 +37,10 @@ const manualPlaylistSchema = z
       .number()
       .int("La cantidad de canciones debe ser un número entero")
       .min(0, "La cantidad de canciones no puede ser negativa")
+      .nullable()
+      .optional(),
+    icon: z
+      .enum(iconOptions, { message: "El ícono seleccionado no es válido" })
       .nullable()
       .optional(),
     featured: z.boolean().optional(),

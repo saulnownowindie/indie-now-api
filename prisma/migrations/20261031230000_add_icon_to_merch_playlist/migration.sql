@@ -1,0 +1,2 @@
+ALTER TABLE "Merch" ADD COLUMN "icon" TEXT;
+ALTER TABLE "Playlist" ADD COLUMN "icon" TEXT;

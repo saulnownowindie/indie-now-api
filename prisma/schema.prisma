@@ -189,6 +189,7 @@ model Merch {
   coverImageId   Int?
   author         User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
   coverImage     Media?        @relation("MerchCover", fields: [coverImageId], references: [id])
+  icon           String?
 
   @@index([status])
   @@index([publishedAt])
@@ -221,6 +222,7 @@ model Playlist {
   spotifyUrl        String?       @unique
   tracksCount       Int?
   author            User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  icon              String?
 
   @@index([status])
   @@index([publishedAt])

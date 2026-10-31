@@ -88,6 +88,7 @@ export const createPlaylist = async (data, authorId) => {
         coverUrl: data.coverUrl ?? null,
         description: data.description ?? null,
         ownerName: data.ownerName ?? null,
+        icon: data.icon ?? null,
         tracksCount: data.tracksCount ?? null,
         featured: data.featured ?? false,
         isVisible: data.isVisible ?? true,
