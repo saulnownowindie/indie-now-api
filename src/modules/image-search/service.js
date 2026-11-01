@@ -190,31 +190,18 @@ function buildSuggestedTitle(metadata) {
   const rawTitle = cleanTitleCandidate(
     extractQuotedText(metadata.title) || metadata.title,
   );
+
+  if (rawTitle && !isGenericTitle(rawTitle)) {
+    return truncateSuggestedTitle(rawTitle);
+  }
+
   const rawDescription = extractDescriptionCandidate(metadata.description);
-  const title = rawTitle && !isGenericTitle(rawTitle) ? rawTitle : "";
-  const description =
-    rawDescription && !isGenericTitle(rawDescription) ? rawDescription : "";
 
-  if (!title && !description) {
-    return null;
+  if (rawDescription && !isGenericTitle(rawDescription)) {
+    return truncateSuggestedTitle(rawDescription);
   }
 
-  if (title && description) {
-    const titleWords = title.split(/\s+/).length;
-
-    // En Instagram el og:title suele ser solo el nombre de la cuenta,
-    // mientras que la descripción contiene el texto real de la publicación.
-    if (
-      (titleWords <= 2 && description.length > title.length + 5) ||
-      (description.length > 24 && description.length > title.length * 2)
-    ) {
-      return truncateSuggestedTitle(description);
-    }
-
-    return truncateSuggestedTitle(title);
-  }
-
-  return truncateSuggestedTitle(title || description);
+  return null;
 }
 
 function cleanContextText(value, { isTitle = false } = {}) {
