@@ -10,6 +10,7 @@ const IMAGE_TIMEOUT_MS = 20000;
 const UPLOAD_TIMEOUT_MS = 20000;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_TITLE_LENGTH = 160;
+const MAX_CONTEXT_LENGTH = 240;
 
 const USER_AGENT =
   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131 Safari/537.36";
@@ -23,11 +24,243 @@ const OG_IMAGE_SELECTORS = [
   'meta[property="twitter:image"]',
 ];
 
+const OG_TITLE_SELECTORS = [
+  'meta[property="og:title"]',
+  'meta[name="twitter:title"]',
+];
+
+const OG_DESCRIPTION_SELECTORS = [
+  'meta[property="og:description"]',
+  'meta[name="description"]',
+  'meta[name="twitter:description"]',
+];
+
+const HTML_ENTITIES = {
+  amp: "&",
+  apos: "'",
+  gt: ">",
+  lt: "<",
+  nbsp: " ",
+  quot: '"',
+};
+
 function sanitizeTitle(title) {
   return String(title ?? "")
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, MAX_TITLE_LENGTH);
+}
+
+function decodeHtmlEntities(value) {
+  return String(value ?? "")
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) =>
+      safeCodePoint(Number.parseInt(hex, 16)),
+    )
+    .replace(/&#(\d+);/g, (_, decimal) =>
+      safeCodePoint(Number.parseInt(decimal, 10)),
+    )
+    .replace(/&([a-z]+);/gi, (match, name) => {
+      return HTML_ENTITIES[name.toLowerCase()] ?? match;
+    });
+}
+
+function safeCodePoint(code) {
+  try {
+    return String.fromCodePoint(code);
+  } catch {
+    return "";
+  }
+}
+
+function cleanSocialText(value) {
+  return decodeHtmlEntities(value)
+    .replace(/\u00a0/g, " ")
+    .replace(/https?:\/\/\S+/gi, " ")
+    .replace(/\bwww\.\S+/gi, " ")
+    .replace(/@[\w.]+/g, " ")
+    .replace(/#([\p{L}\p{N}_]+)/gu, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function firstLine(value) {
+  return (
+    String(value ?? "")
+      .split(/\r?\n|\u2028|\u2029/)
+      .map((line) => line.trim())
+      .find(Boolean) || ""
+  );
+}
+
+function extractQuotedText(value) {
+  const match = String(value ?? "").match(/[“"]([^“”"]{3,})[”"]/);
+
+  return match ? match[1].trim() : "";
+}
+
+function stripDescriptionPrefix(value) {
+  return value
+    .replace(/^[\d.,KMB]+\s*(?:likes?|me gusta)\b[^:]*:\s*/i, "")
+    .replace(
+      /^.*?\b(?:on|en)\s+(?:instagram|tiktok|twitter|x|facebook|threads)\b[^:]*:\s*/i,
+      "",
+    )
+    .replace(/^.*?\bon\s+[A-Za-z]+\s+\d{1,2},?\s+\d{4}\s*:\s*/, "")
+    .trim();
+}
+
+function cleanTitleCandidate(value, { keepHashtags = false } = {}) {
+  const source = keepHashtags
+    ? value
+    : String(value ?? "").replace(/#[\p{L}\p{N}_]+/gu, " ");
+
+  return cleanSocialText(source)
+    .replace(
+      /^.*?\b(?:on|en)\s+(?:instagram|tiktok|twitter|x|facebook|threads)\b\s*:\s*/i,
+      "",
+    )
+    .replace(
+      /\s*[|•]\s*(?:instagram|tiktok|twitter|x|facebook|threads)\b.*$/i,
+      "",
+    )
+    .replace(
+      /\s*[-–—]\s*(?:instagram|tiktok|twitter|x|facebook|threads)\b.*$/i,
+      "",
+    )
+    .replace(/\s*[|•]\s*(?:photos? and videos?|make your day)\b.*$/i, "")
+    .replace(/^(?:watch|mira)\s+/i, "")
+    .replace(/\b(?:the\s+)?latest\s+video\s+from\b/gi, " ")
+    .replace(/\s*\(@[\w.]+\)\s*/g, " ")
+    .replace(/\(\s*\)/g, " ")
+    .replace(/^["“”']+|["“”']+$/g, "")
+    .replace(/[\s.,;:!?-]+$/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isGenericTitle(value) {
+  const text = String(value ?? "").trim();
+
+  if (!text || !/[\p{L}\p{N}]/u.test(text)) {
+    return true;
+  }
+
+  return (
+    /^(instagram|tiktok|twitter|x|facebook|threads)$/i.test(text) ||
+    /instagram photos and videos|see instagram|photos and videos from|make your day|log in|sign up|iniciar sesión|crear cuenta/i.test(
+      text,
+    )
+  );
+}
+
+function truncateSuggestedTitle(value) {
+  const safeValue = String(value ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (safeValue.length <= MAX_TITLE_LENGTH) {
+    return safeValue;
+  }
+
+  const cut = safeValue.slice(0, MAX_TITLE_LENGTH);
+  const lastSpace = cut.lastIndexOf(" ");
+
+  return (lastSpace > 80 ? cut.slice(0, lastSpace) : cut).trim();
+}
+
+function extractDescriptionCandidate(value) {
+  const line = firstLine(value);
+
+  if (!line) {
+    return "";
+  }
+
+  const cleaned = cleanSocialText(line.replace(/#[\p{L}\p{N}_]+/gu, " "));
+  const quoted = extractQuotedText(cleaned);
+  const candidate = quoted || stripDescriptionPrefix(cleaned);
+
+  return cleanTitleCandidate(candidate);
+}
+
+function buildSuggestedTitle(metadata) {
+  if (!metadata) {
+    return null;
+  }
+
+  const rawTitle = cleanTitleCandidate(
+    extractQuotedText(metadata.title) || metadata.title,
+  );
+  const rawDescription = extractDescriptionCandidate(metadata.description);
+  const title = rawTitle && !isGenericTitle(rawTitle) ? rawTitle : "";
+  const description =
+    rawDescription && !isGenericTitle(rawDescription) ? rawDescription : "";
+
+  if (!title && !description) {
+    return null;
+  }
+
+  if (title && description) {
+    const titleWords = title.split(/\s+/).length;
+
+    // En Instagram el og:title suele ser solo el nombre de la cuenta,
+    // mientras que la descripción contiene el texto real de la publicación.
+    if (
+      (titleWords <= 2 && description.length > title.length + 5) ||
+      (description.length > 24 && description.length > title.length * 2)
+    ) {
+      return truncateSuggestedTitle(description);
+    }
+
+    return truncateSuggestedTitle(title);
+  }
+
+  return truncateSuggestedTitle(title || description);
+}
+
+function cleanContextText(value, { isTitle = false } = {}) {
+  if (isTitle) {
+    return cleanTitleCandidate(extractQuotedText(value) || value, {
+      keepHashtags: true,
+    });
+  }
+
+  const cleaned = cleanSocialText(value);
+  const candidate = extractQuotedText(cleaned) || stripDescriptionPrefix(cleaned);
+
+  return cleanTitleCandidate(candidate, { keepHashtags: true });
+}
+
+function buildContextQuery(metadata) {
+  if (!metadata) {
+    return "";
+  }
+
+  const parts = [
+    cleanContextText(metadata.description),
+    cleanContextText(metadata.title, { isTitle: true }),
+  ].filter((part) => part && !isGenericTitle(part));
+  const uniqueParts = [];
+
+  for (const part of parts) {
+    const normalized = part.toLowerCase();
+    const duplicated = uniqueParts.some((existing) => {
+      const normalizedExisting = existing.toLowerCase();
+
+      return (
+        normalizedExisting.includes(normalized) ||
+        normalized.includes(normalizedExisting)
+      );
+    });
+
+    if (!duplicated) {
+      uniqueParts.push(part);
+    }
+  }
+
+  return String(uniqueParts.join(" "))
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, MAX_CONTEXT_LENGTH);
 }
 
 function isInstagramUrl(value) {
@@ -94,7 +327,20 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = PAGE_TIMEOUT_MS) 
   });
 }
 
-async function extractOgImage(pageUrl) {
+function getMetaContent(root, selectors) {
+  for (const selector of selectors) {
+    const raw = root.querySelector(selector)?.getAttribute("content");
+    const value = decodeHtmlEntities(raw).trim();
+
+    if (value) {
+      return value;
+    }
+  }
+
+  return null;
+}
+
+async function extractPageMetadata(pageUrl) {
   if (!isAllowedRemoteUrl(pageUrl)) {
     return null;
   }
@@ -123,28 +369,33 @@ async function extractOgImage(pageUrl) {
     }
 
     const root = parse(await response.text());
-    const content = OG_IMAGE_SELECTORS.map((selector) =>
-      root.querySelector(selector)?.getAttribute("content"),
-    ).find(Boolean);
+    const imageContent = getMetaContent(root, OG_IMAGE_SELECTORS);
+    let imageUrl = null;
 
-    if (!content) {
-      return null;
+    if (imageContent) {
+      try {
+        const resolved = new URL(imageContent, pageUrl).toString();
+
+        // Instagram suele devolver su logo estático cuando bloquea el scraping.
+        if (
+          !resolved.includes("instagram.com/static") &&
+          isAllowedRemoteUrl(resolved)
+        ) {
+          imageUrl = resolved;
+        }
+      } catch {
+        imageUrl = null;
+      }
     }
 
-    const imageUrl = new URL(
-      content.replace(/&amp;/g, "&").trim(),
-      pageUrl,
-    ).toString();
-
-    // Instagram suele devolver su logo estático cuando bloquea el scraping.
-    if (imageUrl.includes("instagram.com/static")) {
-      return null;
-    }
-
-    return isAllowedRemoteUrl(imageUrl) ? imageUrl : null;
+    return {
+      imageUrl,
+      title: getMetaContent(root, OG_TITLE_SELECTORS),
+      description: getMetaContent(root, OG_DESCRIPTION_SELECTORS),
+    };
   } catch (error) {
     console.warn(
-      `[image-search] No se pudo extraer la imagen de ${pageUrl}: ${error.message}`,
+      `[image-search] No se pudo extraer la información de ${pageUrl}: ${error.message}`,
     );
 
     return null;
@@ -195,7 +446,8 @@ async function searchUnsplash(query) {
 }
 
 function generatePollinationsImage(prompt) {
-  const query = `${prompt} indie music editorial cover aesthetic`;
+  const safePrompt = sanitizeTitle(prompt) || "indie music";
+  const query = `${safePrompt} indie music editorial cover aesthetic`;
   const seed = Math.floor(Math.random() * 1_000_000);
 
   return `https://image.pollinations.ai/prompt/${encodeURIComponent(
@@ -323,26 +575,40 @@ async function createExternalMedia(imageUrl, title) {
   }
 }
 
-export async function findBestImage(title, url) {
-  const safeTitle = sanitizeTitle(title);
-
-  if (!safeTitle) {
+async function tryPersistCandidate(candidate, title) {
+  if (!candidate?.url) {
     return null;
   }
 
-  const pollinationsUrl = generatePollinationsImage(safeTitle);
-  const candidates = [];
+  try {
+    const media = await persistImage(candidate.url, title, candidate.source);
+
+    return {
+      url: media.url,
+      mediaId: media.id,
+      source: candidate.source,
+    };
+  } catch (error) {
+    console.warn(
+      `[image-search] No se pudo guardar la imagen de ${candidate.source}: ${error.message}`,
+    );
+
+    return null;
+  }
+}
+
+export async function findBestImage(title, url) {
+  const safeTitle = sanitizeTitle(title);
+
+  if (!safeTitle && !url) {
+    return null;
+  }
+
+  let metadata = null;
 
   if (url) {
     try {
-      const ogImage = await extractOgImage(url);
-
-      if (ogImage) {
-        candidates.push({
-          url: ogImage,
-          source: isInstagramUrl(url) ? "instagram" : "og",
-        });
-      }
+      metadata = await extractPageMetadata(url);
     } catch (error) {
       console.warn(
         `[image-search] Falló la extracción de la imagen original: ${error.message}`,
@@ -350,56 +616,64 @@ export async function findBestImage(title, url) {
     }
   }
 
-  try {
-    const unsplashUrl = await searchUnsplash(safeTitle);
+  const suggestedTitle = buildSuggestedTitle(metadata);
+  const contextQuery = buildContextQuery(metadata);
+  // Si la publicación trae texto, lo usamos para buscar/generar la imagen.
+  // El título manual queda como último recurso.
+  const searchQuery = contextQuery || safeTitle;
+  const pollinationsUrl = generatePollinationsImage(searchQuery);
+  const fallbackTitle = suggestedTitle || safeTitle || "indie music";
 
-    if (unsplashUrl) {
-      candidates.push({ url: unsplashUrl, source: "unsplash" });
-    }
-  } catch (error) {
-    console.warn(
-      `[image-search] Falló la búsqueda en Unsplash: ${error.message}`,
+  if (metadata?.imageUrl) {
+    const result = await tryPersistCandidate(
+      {
+        url: metadata.imageUrl,
+        source: isInstagramUrl(url) ? "instagram" : "og",
+      },
+      fallbackTitle,
     );
+
+    if (result) {
+      return { ...result, suggestedTitle };
+    }
   }
 
-  candidates.push({ url: pollinationsUrl, source: "pollinations" });
+  if (searchQuery) {
+    const unsplashUrl = await searchUnsplash(searchQuery);
 
-  const seen = new Set();
-
-  for (const candidate of candidates) {
-    if (!candidate.url || seen.has(candidate.url)) {
-      continue;
-    }
-
-    seen.add(candidate.url);
-
-    try {
-      const media = await persistImage(
-        candidate.url,
-        safeTitle,
-        candidate.source,
+    if (unsplashUrl) {
+      const result = await tryPersistCandidate(
+        { url: unsplashUrl, source: "unsplash" },
+        fallbackTitle,
       );
 
-      return {
-        url: media.url,
-        mediaId: media.id,
-        source: candidate.source,
-      };
-    } catch (error) {
-      console.warn(
-        `[image-search] No se pudo guardar la imagen de ${candidate.source}: ${error.message}`,
-      );
+      if (result) {
+        return { ...result, suggestedTitle };
+      }
     }
+  }
+
+  const generated = await tryPersistCandidate(
+    { url: pollinationsUrl, source: "pollinations" },
+    fallbackTitle,
+  );
+
+  if (generated) {
+    return { ...generated, suggestedTitle };
   }
 
   // Último recurso: devolvemos una imagen generada y un registro válido
   // para que el endpoint nunca responda con un 500 ni con mediaId nulo.
-  const fallbackMedia = await createExternalMedia(pollinationsUrl, safeTitle);
+  const fallbackMedia = await createExternalMedia(
+    pollinationsUrl,
+    fallbackTitle,
+  );
 
   return {
     url: fallbackMedia?.url || pollinationsUrl,
     mediaId: fallbackMedia?.id || null,
     source: "pollinations",
+    suggestedTitle,
     fallback: true,
   };
 }
