@@ -5,6 +5,7 @@ import cors from "cors";
 import authRoutes from "./modules/auth/routes.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 import categoryRoutes from "./modules/category/routes.js";
+import imageSearchRoutes from "./modules/image-search/routes.js";
 import mediaRoutes from "./modules/media/routes.js";
 import liveSessionRoutes from "./modules/liveSession/routes.js";
 import merchRoutes from "./modules/merch/routes.js";
@@ -39,6 +40,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/image-search", imageSearchRoutes);
 app.use("/api/media", mediaRoutes);
 app.use("/api/live-sessions", liveSessionRoutes);
 app.use("/api/merch", merchRoutes);
