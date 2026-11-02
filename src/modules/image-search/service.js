@@ -10,12 +10,25 @@ const IMAGE_TIMEOUT_MS = 20000;
 const UPLOAD_TIMEOUT_MS = 20000;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_TITLE_LENGTH = 160;
-const MAX_CONTEXT_LENGTH = 240;
 
 const USER_AGENT =
   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131 Safari/537.36";
 
-const INSTAGRAM_HOSTS = new Set(["instagram.com", "www.instagram.com"]);
+const INSTAGRAM_HOSTS = new Set([
+  "instagram.com",
+  "www.instagram.com",
+  "m.instagram.com",
+]);
+
+const TIKTOK_HOSTS = new Set([
+  "tiktok.com",
+  "www.tiktok.com",
+  "m.tiktok.com",
+  "vm.tiktok.com",
+  "vt.tiktok.com",
+]);
+
+const DIRECT_IMAGE_PATTERN = /\.(?:avif|bmp|gif|jpe?g|png|svg|tiff?|webp)$/i;
 
 const OG_IMAGE_SELECTORS = [
   'meta[property="og:image"]',
@@ -204,57 +217,33 @@ function buildSuggestedTitle(metadata) {
   return null;
 }
 
-function cleanContextText(value, { isTitle = false } = {}) {
-  if (isTitle) {
-    return cleanTitleCandidate(extractQuotedText(value) || value, {
-      keepHashtags: true,
-    });
-  }
-
-  const cleaned = cleanSocialText(value);
-  const candidate = extractQuotedText(cleaned) || stripDescriptionPrefix(cleaned);
-
-  return cleanTitleCandidate(candidate, { keepHashtags: true });
-}
-
-function buildContextQuery(metadata) {
-  if (!metadata) {
-    return "";
-  }
-
-  const parts = [
-    cleanContextText(metadata.description),
-    cleanContextText(metadata.title, { isTitle: true }),
-  ].filter((part) => part && !isGenericTitle(part));
-  const uniqueParts = [];
-
-  for (const part of parts) {
-    const normalized = part.toLowerCase();
-    const duplicated = uniqueParts.some((existing) => {
-      const normalizedExisting = existing.toLowerCase();
-
-      return (
-        normalizedExisting.includes(normalized) ||
-        normalized.includes(normalizedExisting)
-      );
-    });
-
-    if (!duplicated) {
-      uniqueParts.push(part);
-    }
-  }
-
-  return String(uniqueParts.join(" "))
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, MAX_CONTEXT_LENGTH);
-}
-
-function isInstagramUrl(value) {
+function getSocialSource(value) {
   try {
     const hostname = new URL(value).hostname.toLowerCase();
 
-    return INSTAGRAM_HOSTS.has(hostname);
+    if (INSTAGRAM_HOSTS.has(hostname)) {
+      return "instagram";
+    }
+
+    if (TIKTOK_HOSTS.has(hostname)) {
+      return "tiktok";
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function isDirectImageUrl(value) {
+  try {
+    const url = new URL(value);
+
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      return false;
+    }
+
+    return DIRECT_IMAGE_PATTERN.test(url.pathname);
   } catch {
     return false;
   }
@@ -389,59 +378,6 @@ async function extractPageMetadata(pageUrl) {
   }
 }
 
-async function searchUnsplash(query) {
-  const accessKey = process.env.UNSPLASH_ACCESS_KEY;
-
-  if (!accessKey || !query) {
-    return null;
-  }
-
-  try {
-    const url = new URL("https://api.unsplash.com/search/photos");
-    url.searchParams.set("query", query);
-    url.searchParams.set("per_page", "1");
-    url.searchParams.set("orientation", "landscape");
-    url.searchParams.set("content_filter", "high");
-
-    const response = await fetchWithTimeout(
-      url.toString(),
-      {
-        headers: {
-          Authorization: `Client-ID ${accessKey}`,
-          "Accept-Version": "v1",
-          "User-Agent": USER_AGENT,
-        },
-      },
-      PAGE_TIMEOUT_MS,
-    );
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const data = await response.json();
-    const result = data?.results?.[0];
-
-    return result?.urls?.regular || result?.urls?.full || null;
-  } catch (error) {
-    console.warn(
-      `[image-search] No se pudo buscar en Unsplash: ${error.message}`,
-    );
-
-    return null;
-  }
-}
-
-function generatePollinationsImage(prompt) {
-  const safePrompt = sanitizeTitle(prompt) || "indie music";
-  const query = `${safePrompt} indie music editorial cover aesthetic`;
-  const seed = Math.floor(Math.random() * 1_000_000);
-
-  return `https://image.pollinations.ai/prompt/${encodeURIComponent(
-    query,
-  )}?width=1200&height=800&nologo=true&seed=${seed}`;
-}
-
 async function downloadImage(imageUrl) {
   const response = await fetchWithTimeout(
     imageUrl,
@@ -541,27 +477,6 @@ async function persistImage(imageUrl, title, source) {
   }
 }
 
-async function createExternalMedia(imageUrl, title) {
-  try {
-    return await prisma.media.create({
-      data: {
-        type: "IMAGE",
-        filename: `external-${Date.now()}-${Math.round(Math.random() * 1e9)}`,
-        originalName: `${title.slice(0, 60)}.jpg`,
-        mimeType: "image/jpeg",
-        size: 0,
-        url: imageUrl,
-      },
-    });
-  } catch (error) {
-    console.error(
-      `[image-search] No se pudo crear el registro de respaldo: ${error.message}`,
-    );
-
-    return null;
-  }
-}
-
 async function tryPersistCandidate(candidate, title) {
   if (!candidate?.url) {
     return null;
@@ -587,80 +502,46 @@ async function tryPersistCandidate(candidate, title) {
 export async function findBestImage(title, url) {
   const safeTitle = sanitizeTitle(title);
 
-  if (!safeTitle && !url) {
+  if (!url) {
+    return null;
+  }
+
+  // Estrategia 1: la URL ya apunta directamente a una imagen.
+  if (isDirectImageUrl(url)) {
+    const result = await tryPersistCandidate(
+      { url, source: "direct" },
+      safeTitle || "imagen",
+    );
+
+    return result ? { ...result, suggestedTitle: null } : null;
+  }
+
+  // Estrategia 2: enlaces de Instagram/TikTok, intentamos leer su og:image.
+  const socialSource = getSocialSource(url);
+
+  if (!socialSource) {
     return null;
   }
 
   let metadata = null;
 
-  if (url) {
-    try {
-      metadata = await extractPageMetadata(url);
-    } catch (error) {
-      console.warn(
-        `[image-search] Falló la extracción de la imagen original: ${error.message}`,
-      );
-    }
+  try {
+    metadata = await extractPageMetadata(url);
+  } catch (error) {
+    console.warn(
+      `[image-search] Falló la extracción de la imagen original: ${error.message}`,
+    );
+  }
+
+  if (!metadata?.imageUrl) {
+    return null;
   }
 
   const suggestedTitle = buildSuggestedTitle(metadata);
-  const contextQuery = buildContextQuery(metadata);
-  // Si la publicación trae texto, lo usamos para buscar/generar la imagen.
-  // El título manual queda como último recurso.
-  const searchQuery = contextQuery || safeTitle;
-  const pollinationsUrl = generatePollinationsImage(searchQuery);
-  const fallbackTitle = suggestedTitle || safeTitle || "indie music";
-
-  if (metadata?.imageUrl) {
-    const result = await tryPersistCandidate(
-      {
-        url: metadata.imageUrl,
-        source: isInstagramUrl(url) ? "instagram" : "og",
-      },
-      fallbackTitle,
-    );
-
-    if (result) {
-      return { ...result, suggestedTitle };
-    }
-  }
-
-  if (searchQuery) {
-    const unsplashUrl = await searchUnsplash(searchQuery);
-
-    if (unsplashUrl) {
-      const result = await tryPersistCandidate(
-        { url: unsplashUrl, source: "unsplash" },
-        fallbackTitle,
-      );
-
-      if (result) {
-        return { ...result, suggestedTitle };
-      }
-    }
-  }
-
-  const generated = await tryPersistCandidate(
-    { url: pollinationsUrl, source: "pollinations" },
-    fallbackTitle,
+  const result = await tryPersistCandidate(
+    { url: metadata.imageUrl, source: socialSource },
+    suggestedTitle || safeTitle || "indie music",
   );
 
-  if (generated) {
-    return { ...generated, suggestedTitle };
-  }
-
-  // Último recurso: devolvemos una imagen generada y un registro válido
-  // para que el endpoint nunca responda con un 500 ni con mediaId nulo.
-  const fallbackMedia = await createExternalMedia(
-    pollinationsUrl,
-    fallbackTitle,
-  );
-
-  return {
-    url: fallbackMedia?.url || pollinationsUrl,
-    mediaId: fallbackMedia?.id || null,
-    source: "pollinations",
-    suggestedTitle,
-    fallback: true,
-  };
+  return result ? { ...result, suggestedTitle } : null;
 }
