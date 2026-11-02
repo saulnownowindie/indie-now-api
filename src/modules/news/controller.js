@@ -20,6 +20,7 @@ export const getNews = async (req, res, next) => {
 
     res.json(news);
   } catch (error) {
+    console.log(error.issues);
     next(error);
   }
 };
@@ -38,6 +39,7 @@ export const getPublicNewsController = async (req, res, next) => {
 
     res.json(news);
   } catch (error) {
+    console.log(error.issues);
     next(error);
   }
 };
@@ -58,6 +60,7 @@ export const getNewsBySlugController = async (req, res, next) => {
 
     res.json(news);
   } catch (error) {
+    console.log(error.issues);
     next(error);
   }
 };
@@ -69,6 +72,7 @@ export const postNews = async (req, res, next) => {
 
     res.status(201).json(news);
   } catch (error) {
+    console.log(error.issues);
     next(error);
   }
 };
@@ -81,6 +85,7 @@ export const putNews = async (req, res, next) => {
 
     res.json(news);
   } catch (error) {
+    console.log(error.issues);
     next(error);
   }
 };
@@ -95,6 +100,7 @@ export const removeNews = async (req, res, next) => {
       message: "Noticia eliminada correctamente",
     });
   } catch (error) {
+    console.log(error.issues);
     next(error);
   }
 };
@@ -116,6 +122,7 @@ export const postInstagramCover = async (req, res, next) => {
       media,
     });
   } catch (error) {
+    console.log(error.issues);
     next(error);
   }
 };
