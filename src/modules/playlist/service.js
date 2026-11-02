@@ -47,6 +47,45 @@ const getSpotifyData = async (spotifyUrl) => {
   };
 };
 
+const isSpotifyUrl = (value) => {
+  if (typeof value !== "string" || !value.trim()) {
+    return false;
+  }
+
+  try {
+    const url = new URL(value.trim());
+    return url.hostname.toLowerCase().includes("spotify.com");
+  } catch {
+    return false;
+  }
+};
+
+const getSpotifyOembedCoverUrl = async (spotifyUrl) => {
+  if (!isSpotifyUrl(spotifyUrl)) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(
+      `https://open.spotify.com/oembed?url=${encodeURIComponent(spotifyUrl.trim())}`,
+      {
+        headers: {
+          Accept: "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    return data?.thumbnail_url ?? data?.thumbnail ?? null;
+  } catch {
+    return null;
+  }
+};
+
 export const getAllPlaylists = async () => {
   return prisma.playlist.findMany({
     include: playlistInclude,
@@ -79,13 +118,18 @@ export const createPlaylist = async (data, authorId) => {
     const slug = await getUniqueSlug(title);
     const status = data.status ?? "DRAFT";
 
+    let coverUrl = data.coverUrl ?? null;
+    if (coverUrl == null && isSpotifyUrl(data.url)) {
+      coverUrl = await getSpotifyOembedCoverUrl(data.url);
+    }
+
     return prisma.playlist.create({
       data: {
         title,
         slug,
         platform: data.platform,
         url: data.url,
-        coverUrl: data.coverUrl ?? null,
+        coverUrl,
         description: data.description ?? null,
         ownerName: data.ownerName ?? null,
         icon: data.icon ?? null,
@@ -106,6 +150,11 @@ export const createPlaylist = async (data, authorId) => {
   }
 
   const spotifyData = await getSpotifyData(data.spotifyUrl);
+
+  if (!spotifyData.coverUrl) {
+    spotifyData.coverUrl = await getSpotifyOembedCoverUrl(spotifyData.spotifyUrl);
+  }
+
   const slug = await getUniqueSlug(spotifyData.title);
 
   return prisma.playlist.create({
@@ -123,14 +172,37 @@ export const createPlaylist = async (data, authorId) => {
 export const updatePlaylist = async (id, data) => {
   const payload = { ...data };
 
-  if (payload.status === "PUBLISHED" && payload.publishedAt === undefined) {
-    const existing = await prisma.playlist.findUnique({
-      where: { id },
-      select: { publishedAt: true },
-    });
+  const needsExisting =
+    (payload.status === "PUBLISHED" && payload.publishedAt === undefined) ||
+    payload.coverUrl === undefined ||
+    payload.coverUrl === null;
 
+  let existing = null;
+  if (needsExisting) {
+    existing = await prisma.playlist.findUnique({
+      where: { id },
+      select: {
+        publishedAt: true,
+        url: true,
+        spotifyUrl: true,
+        coverUrl: true,
+      },
+    });
+  }
+
+  if (payload.status === "PUBLISHED" && payload.publishedAt === undefined) {
     if (!existing?.publishedAt) {
       payload.publishedAt = new Date();
+    }
+  }
+
+  if (payload.coverUrl === undefined || payload.coverUrl === null) {
+    const candidateUrl = payload.url ?? existing?.spotifyUrl ?? existing?.url;
+    if (existing?.coverUrl == null && candidateUrl && isSpotifyUrl(candidateUrl)) {
+      const fetched = await getSpotifyOembedCoverUrl(candidateUrl);
+      if (fetched) {
+        payload.coverUrl = fetched;
+      }
     }
   }
 
@@ -160,6 +232,10 @@ export const syncPlaylist = async (id) => {
   }
 
   const spotifyData = await getSpotifyData(playlist.spotifyUrl);
+
+  if (!spotifyData.coverUrl) {
+    spotifyData.coverUrl = await getSpotifyOembedCoverUrl(spotifyData.spotifyUrl);
+  }
 
   return prisma.playlist.update({
     where: { id },
