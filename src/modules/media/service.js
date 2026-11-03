@@ -2,6 +2,10 @@ import crypto from "node:crypto";
 
 import prisma from "../../config/prisma.js";
 import { deleteAsset, uploadBuffer } from "../../utils/cloudinaryUpload.js";
+import {
+  buildPaginatedResponse,
+  getPagination,
+} from "../../utils/pagination.js";
 
 const DEFAULT_FOLDER = "news-covers";
 
@@ -41,12 +45,21 @@ export const createUploadSignature = ({ resourceType, folder }) => {
   };
 };
 
-export const getAllMedia = async () => {
-  return prisma.media.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+export const getAllMedia = async ({ page = 1, limit = 50 } = {}) => {
+  const { skip, take } = getPagination(page, limit);
+
+  const [data, total] = await Promise.all([
+    prisma.media.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip,
+      take,
+    }),
+    prisma.media.count(),
+  ]);
+
+  return buildPaginatedResponse(data, total, page, limit);
 };
 
 export const getMediaById = async (id) => {

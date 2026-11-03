@@ -22,6 +22,7 @@ const endpoints = [
   "/api/live-sessions",
   "/api/playlists",
   "/api/categories",
+  "/api/config",
   "/api/reels",
   "/api/reels/public",
   "/api/reels/public?section=REELS",
@@ -279,6 +280,43 @@ async function checkAdminAccess() {
     if (response.status !== 200) {
       failed = true;
     }
+  }
+
+  const paginatedEndpoints = [
+    "/api/admin/news?page=1&limit=1",
+    "/api/admin/reels?page=1&limit=1",
+    "/api/media?page=1&limit=1",
+  ];
+
+  for (const endpoint of paginatedEndpoints) {
+    const response = await fetch(`${base}${endpoint}`, {
+      headers: { authorization: `Bearer ${token}` },
+    });
+    const body = await response.json();
+    const isValid =
+      response.status === 200 &&
+      Array.isArray(body.data) &&
+      body.data.length <= 1 &&
+      body.pagination?.page === 1 &&
+      body.pagination?.limit === 1 &&
+      Number.isInteger(body.pagination?.total);
+
+    console.log(
+      `${response.status} ${endpoint} (paginación ${isValid ? "OK" : "FAIL"})`,
+    );
+
+    if (!isValid) {
+      failed = true;
+    }
+  }
+
+  const invalidLimit = await fetch(`${base}/api/admin/news?limit=51`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  console.log(`${invalidLimit.status} GET /api/admin/news?limit=51 (máximo)`);
+
+  if (invalidLimit.status !== 400) {
+    failed = true;
   }
 }
 

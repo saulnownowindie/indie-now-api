@@ -22,11 +22,11 @@ API RESTful para la plataforma **Indie Now**, desarrollada con **Node.js, Expres
 | **Category** | `POST` | `/api/categories` | Requiere Auth | Crear nueva categoría |
 | **Category** | `PUT` | `/api/categories/:id` | Requiere Auth | Actualizar categoría por ID |
 | **Category** | `DELETE` | `/api/categories/:id` | Requiere Auth | Eliminar categoría por ID |
-| **Media** | `GET` | `/api/media` | Requiere Auth | Listar metadatos de archivos |
+| **Media** | `GET` | `/api/media` | Requiere Auth | Listar metadatos de archivos paginados |
 | **Media** | `GET` | `/api/media/:id` | Requiere Auth | Obtener metadato de archivo por ID |
 | **Media** | `POST` | `/api/media/upload` | Requiere Auth | Subir archivo de imagen (JPEG, PNG, WebP) |
-| **Admin** | `GET` | `/api/admin/news` | Requiere Auth | Listar todas las noticias, incluidos borradores |
-| **Admin** | `GET` | `/api/admin/reels` | Requiere Auth | Listar todos los reels, incluidos borradores |
+| **Admin** | `GET` | `/api/admin/news` | Requiere Auth | Listar todas las noticias, incluidos borradores (paginado) |
+| **Admin** | `GET` | `/api/admin/reels` | Requiere Auth | Listar todos los reels, incluidos borradores (paginado) |
 | **Admin** | `GET` | `/api/admin/videos` | Requiere Auth | Listar todos los videos, incluidos borradores |
 | **Admin** | `GET` | `/api/admin/live-sessions` | Requiere Auth | Listar todas las Sessions, incluidas borradores |
 | **Admin** | `GET` | `/api/admin/merch` | Requiere Auth | Listar todo el merch, incluidos borradores |
@@ -54,6 +54,27 @@ API RESTful para la plataforma **Indie Now**, desarrollada con **Node.js, Expres
 | **Playlist** | `PUT` | `/api/playlists/:id` | Requiere Auth | Actualizar datos CMS de la playlist |
 | **Playlist** | `POST` | `/api/playlists/:id/sync` | Requiere Auth | Sincronizar metadatos desde Spotify API |
 | **Playlist** | `DELETE` | `/api/playlists/:id` | Requiere Auth | Eliminar playlist por ID |
+
+### Paginación
+
+`GET /api/media`, `GET /api/admin/news` y `GET /api/admin/reels` aceptan:
+
+- `page`: entero mayor o igual a 1. Por defecto `1`.
+- `limit`: entero entre 1 y 50. Por defecto `50`.
+
+Respuesta:
+
+```json
+{
+  "data": [],
+  "pagination": {
+    "page": 1,
+    "limit": 50,
+    "total": 0,
+    "totalPages": 0
+  }
+}
+```
 
 ---
 

@@ -1,4 +1,8 @@
 import prisma from "../../config/prisma.js";
+import {
+  buildPaginatedResponse,
+  getPagination,
+} from "../../utils/pagination.js";
 import { generateUniqueSlug } from "../../utils/slug.js";
 
 const adminNewsInclude = {
@@ -101,11 +105,20 @@ export const getNewsBySlug = async (slug) => {
 };
 
 // Lectura completa para el CMS: solo se expone en /api/admin/news.
-export const getAllNewsAdmin = async () => {
-  return prisma.news.findMany({
-    include: adminNewsInclude,
-    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-  });
+export const getAllNewsAdmin = async ({ page = 1, limit = 50 } = {}) => {
+  const { skip, take } = getPagination(page, limit);
+
+  const [data, total] = await Promise.all([
+    prisma.news.findMany({
+      include: adminNewsInclude,
+      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+      skip,
+      take,
+    }),
+    prisma.news.count(),
+  ]);
+
+  return buildPaginatedResponse(data, total, page, limit);
 };
 
 export const createNews = async (data, authorId) => {

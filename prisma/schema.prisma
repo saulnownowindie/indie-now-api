@@ -55,6 +55,8 @@ model Media {
   newsCovers        News[]        @relation("NewsCover")
   reelCovers        Reel[]        @relation("ReelCover")
   videoCovers       Video[]       @relation("VideoCover")
+
+  @@index([createdAt])
 }
 
 model News {
@@ -86,6 +88,8 @@ model News {
   @@index([categoryId])
   @@index([authorId])
   @@index([homeSection, sortOrder])
+  @@index([status, isVisible, homeSection, sortOrder])
+  @@index([coverImageId])
 }
 
 model LiveSession {
@@ -109,6 +113,7 @@ model LiveSession {
   @@index([status])
   @@index([publishedAt])
   @@index([authorId])
+  @@index([coverImageId])
 }
 
 model Video {
@@ -135,6 +140,7 @@ model Video {
   @@index([publishedAt])
   @@index([categoryId])
   @@index([authorId])
+  @@index([coverImageId])
 }
 
 model Reel {
@@ -170,6 +176,10 @@ model Reel {
   @@index([authorId])
   @@index([status, isVisible, featured])
   @@index([homeSection, sortOrder])
+  @@index([status, isVisible, homeSection, sortOrder])
+  @@index([previewStatus, updatedAt])
+  @@index([previewStatus, processingAt])
+  @@index([coverImageId])
 }
 
 model Merch {
@@ -203,6 +213,7 @@ model Merch {
   @@index([publishedAt])
   @@index([authorId])
   @@index([status, isVisible, featured, sortOrder])
+  @@index([coverImageId])
 }
 
 model Playlist {

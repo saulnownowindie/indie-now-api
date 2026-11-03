@@ -18,6 +18,7 @@ import {
 } from "./validation.js";
 import { getCoverFromSocialUrl } from "./cover.js";
 import { parseHomeSection } from "../../utils/homeSections.js";
+import { paginationQuerySchema } from "../../utils/pagination.js";
 
 export const getReels = async (req, res, next) => {
   try {
@@ -31,7 +32,8 @@ export const getReels = async (req, res, next) => {
 
 export const getReelsAdmin = async (req, res, next) => {
   try {
-    const reels = await getAllReelsAdmin();
+    const { page, limit } = paginationQuerySchema.parse(req.query);
+    const reels = await getAllReelsAdmin({ page, limit });
 
     res.json(reels);
   } catch (error) {

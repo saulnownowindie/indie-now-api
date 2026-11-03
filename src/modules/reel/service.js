@@ -1,4 +1,8 @@
 import prisma from "../../config/prisma.js";
+import {
+  buildPaginatedResponse,
+  getPagination,
+} from "../../utils/pagination.js";
 import { generateUniqueSlug } from "../../utils/slug.js";
 import { getSocialEmbedUrl } from "../../utils/socialEmbed.js";
 
@@ -134,13 +138,20 @@ export const getReelBySlug = async (slug) => {
 };
 
 // Lectura completa para el CMS: solo se expone en /api/admin/reels.
-export const getAllReelsAdmin = async () => {
-  const reels = await prisma.reel.findMany({
-    include: adminReelInclude,
-    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-  });
+export const getAllReelsAdmin = async ({ page = 1, limit = 50 } = {}) => {
+  const { skip, take } = getPagination(page, limit);
 
-  return reels.map(withEmbed);
+  const [data, total] = await Promise.all([
+    prisma.reel.findMany({
+      include: adminReelInclude,
+      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+      skip,
+      take,
+    }),
+    prisma.reel.count(),
+  ]);
+
+  return buildPaginatedResponse(data.map(withEmbed), total, page, limit);
 };
 
 export const createReel = async (data, authorId) => {

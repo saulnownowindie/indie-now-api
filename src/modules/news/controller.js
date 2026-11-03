@@ -14,6 +14,7 @@ import {
   updateNewsSchema,
 } from "./validation.js";
 import { parseHomeSection } from "../../utils/homeSections.js";
+import { paginationQuerySchema } from "../../utils/pagination.js";
 
 export const getNews = async (req, res, next) => {
   try {
@@ -28,7 +29,8 @@ export const getNews = async (req, res, next) => {
 
 export const getNewsAdmin = async (req, res, next) => {
   try {
-    const news = await getAllNewsAdmin();
+    const { page, limit } = paginationQuerySchema.parse(req.query);
+    const news = await getAllNewsAdmin({ page, limit });
 
     res.json(news);
   } catch (error) {

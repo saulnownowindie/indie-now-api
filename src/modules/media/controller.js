@@ -12,6 +12,7 @@ import {
   updateMediaSchema,
   uploadSignatureSchema,
 } from "./validation.js";
+import { paginationQuerySchema } from "../../utils/pagination.js";
 
 // Lista blanca: el cliente solo elige la clave, nunca el nombre real de la carpeta.
 const FOLDERS = {
@@ -21,7 +22,8 @@ const FOLDERS = {
 
 export const getMedia = async (req, res, next) => {
   try {
-    const media = await getAllMedia();
+    const { page, limit } = paginationQuerySchema.parse(req.query);
+    const media = await getAllMedia({ page, limit });
 
     res.json(media);
   } catch (error) {
