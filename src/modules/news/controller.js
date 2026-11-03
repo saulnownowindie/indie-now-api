@@ -3,6 +3,7 @@ import {
   createNews,
   deleteNews,
   getAllNews,
+  getAllNewsAdmin,
   getNewsBySlug,
   getPublicNews,
   updateNews,
@@ -21,6 +22,16 @@ export const getNews = async (req, res, next) => {
     res.json(news);
   } catch (error) {
     console.log(error.issues);
+    next(error);
+  }
+};
+
+export const getNewsAdmin = async (req, res, next) => {
+  try {
+    const news = await getAllNewsAdmin();
+
+    res.json(news);
+  } catch (error) {
     next(error);
   }
 };
@@ -48,11 +59,7 @@ export const getNewsBySlugController = async (req, res, next) => {
   try {
     const news = await getNewsBySlug(req.params.slug);
 
-    if (
-      !news ||
-      news.status !== "PUBLISHED" ||
-      !news.isVisible
-    ) {
+    if (!news) {
       return res.status(404).json({
         message: "Noticia no encontrada",
       });

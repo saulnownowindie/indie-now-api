@@ -2,6 +2,7 @@ import {
   createReel,
   deleteReel,
   getAllReels,
+  getAllReelsAdmin,
   getFeaturedReels,
   getPublicReels,
   getReelBySlug,
@@ -21,6 +22,16 @@ import { parseHomeSection } from "../../utils/homeSections.js";
 export const getReels = async (req, res, next) => {
   try {
     const reels = await getAllReels();
+
+    res.json(reels);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getReelsAdmin = async (req, res, next) => {
+  try {
+    const reels = await getAllReelsAdmin();
 
     res.json(reels);
   } catch (error) {

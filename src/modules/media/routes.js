@@ -13,8 +13,8 @@ import {
 
 const router = Router();
 
-router.get("/", getMedia);
-router.get("/:id", getMediaByIdController);
+router.get("/", authenticate, getMedia);
+router.get("/:id", authenticate, getMediaByIdController);
 router.post("/signature", authenticate, postUploadSignature);
 router.post("/", authenticate, upload.single("file"), uploadMedia);
 router.put("/:id", authenticate, putMedia);

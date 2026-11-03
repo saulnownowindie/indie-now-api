@@ -2,7 +2,7 @@ import prisma from "../../config/prisma.js";
 import { generateUniqueSlug } from "../../utils/slug.js";
 import { getSocialEmbedUrl } from "../../utils/socialEmbed.js";
 
-const reelInclude = {
+const adminReelInclude = {
   coverImage: true,
   author: {
     select: {
@@ -11,6 +11,45 @@ const reelInclude = {
       email: true,
     },
   },
+};
+
+const publicReelSelect = {
+  id: true,
+  title: true,
+  slug: true,
+  platform: true,
+  url: true,
+  videoUrl: true,
+  previewUrl: true,
+  posterUrl: true,
+  previewStart: true,
+  coverUrl: true,
+  featured: true,
+  seoTitle: true,
+  seoDescription: true,
+  publishedAt: true,
+  homeSection: true,
+  sortOrder: true,
+  createdAt: true,
+  updatedAt: true,
+  coverImage: {
+    select: {
+      id: true,
+      url: true,
+    },
+  },
+  author: {
+    select: {
+      id: true,
+      name: true,
+      avatarUrl: true,
+    },
+  },
+};
+
+const publishedWhere = {
+  status: "PUBLISHED",
+  isVisible: true,
 };
 
 const withEmbed = (reel) => ({
@@ -48,23 +87,17 @@ const withPreviewStatus = (data, existing = {}) => {
   return { previewStatus: null, processingAt: null };
 };
 
-export const getAllReels = async () => {
-  const reels = await prisma.reel.findMany({
-    include: reelInclude,
-    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-  });
-
-  return reels.map(withEmbed);
+export const getAllReels = async (section) => {
+  return getPublicReels(section);
 };
 
 export const getPublicReels = async (section) => {
   const reels = await prisma.reel.findMany({
     where: {
-      status: "PUBLISHED",
-      isVisible: true,
+      ...publishedWhere,
       ...(section ? { homeSection: section } : {}),
     },
-    include: reelInclude,
+    select: publicReelSelect,
     orderBy: [
       { sortOrder: "asc" },
       { publishedAt: "desc" },
@@ -78,11 +111,10 @@ export const getPublicReels = async (section) => {
 export const getFeaturedReels = async () => {
   const reels = await prisma.reel.findMany({
     where: {
+      ...publishedWhere,
       featured: true,
-      isVisible: true,
-      status: "PUBLISHED",
     },
-    include: reelInclude,
+    select: publicReelSelect,
     orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
   });
 
@@ -90,12 +122,25 @@ export const getFeaturedReels = async () => {
 };
 
 export const getReelBySlug = async (slug) => {
-  const reel = await prisma.reel.findUnique({
-    where: { slug },
-    include: reelInclude,
+  const reel = await prisma.reel.findFirst({
+    where: {
+      slug,
+      ...publishedWhere,
+    },
+    select: publicReelSelect,
   });
 
   return reel ? withEmbed(reel) : null;
+};
+
+// Lectura completa para el CMS: solo se expone en /api/admin/reels.
+export const getAllReelsAdmin = async () => {
+  const reels = await prisma.reel.findMany({
+    include: adminReelInclude,
+    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+  });
+
+  return reels.map(withEmbed);
 };
 
 export const createReel = async (data, authorId) => {
@@ -108,7 +153,7 @@ export const createReel = async (data, authorId) => {
       slug,
       authorId,
     },
-    include: reelInclude,
+    include: adminReelInclude,
   });
 
   return withEmbed(reel);
@@ -132,7 +177,7 @@ export const updateReel = async (id, data) => {
       ...withPreviewStatus(data, existing),
       ...(slug && { slug }),
     },
-    include: reelInclude,
+    include: adminReelInclude,
   });
 
   return withEmbed(reel);
@@ -176,7 +221,7 @@ export const requestReelPreview = async (
       previewStatus: "pending",
       processingAt: null,
     },
-    include: reelInclude,
+    include: adminReelInclude,
   });
 
   return withEmbed(updated);

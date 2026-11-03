@@ -22,26 +22,34 @@ API RESTful para la plataforma **Indie Now**, desarrollada con **Node.js, Expres
 | **Category** | `POST` | `/api/categories` | Requiere Auth | Crear nueva categoría |
 | **Category** | `PUT` | `/api/categories/:id` | Requiere Auth | Actualizar categoría por ID |
 | **Category** | `DELETE` | `/api/categories/:id` | Requiere Auth | Eliminar categoría por ID |
+| **Media** | `GET` | `/api/media` | Requiere Auth | Listar metadatos de archivos |
+| **Media** | `GET` | `/api/media/:id` | Requiere Auth | Obtener metadato de archivo por ID |
 | **Media** | `POST` | `/api/media/upload` | Requiere Auth | Subir archivo de imagen (JPEG, PNG, WebP) |
-| **News** | `GET` | `/api/news` | Pública | Listar todas las noticias |
-| **News** | `GET` | `/api/news/:slug` | Pública | Obtener noticia por slug |
+| **Admin** | `GET` | `/api/admin/news` | Requiere Auth | Listar todas las noticias, incluidos borradores |
+| **Admin** | `GET` | `/api/admin/reels` | Requiere Auth | Listar todos los reels, incluidos borradores |
+| **Admin** | `GET` | `/api/admin/videos` | Requiere Auth | Listar todos los videos, incluidos borradores |
+| **Admin** | `GET` | `/api/admin/live-sessions` | Requiere Auth | Listar todas las Sessions, incluidas borradores |
+| **Admin** | `GET` | `/api/admin/merch` | Requiere Auth | Listar todo el merch, incluidos borradores |
+| **Admin** | `GET` | `/api/admin/playlists` | Requiere Auth | Listar todas las playlists, incluidas borradores |
+| **News** | `GET` | `/api/news` | Pública | Listar noticias publicadas y visibles (sin `content`) |
+| **News** | `GET` | `/api/news/:slug` | Pública | Obtener noticia publicada y visible por slug |
 | **News** | `POST` | `/api/news` | Requiere Auth | Crear noticia |
 | **News** | `PUT` | `/api/news/:id` | Requiere Auth | Actualizar noticia por ID |
 | **News** | `DELETE` | `/api/news/:id` | Requiere Auth | Eliminar noticia por ID |
-| **Video** | `GET` | `/api/videos` | Pública | Listar todos los videos |
-| **Video** | `GET` | `/api/videos/:slug` | Pública | Obtener video por slug |
+| **Video** | `GET` | `/api/videos` | Pública | Listar videos publicados y visibles |
+| **Video** | `GET` | `/api/videos/:slug` | Pública | Obtener video publicado y visible por slug |
 | **Video** | `POST` | `/api/videos` | Requiere Auth | Crear video |
 | **Video** | `PUT` | `/api/videos/:id` | Requiere Auth | Actualizar video por ID |
 | **Video** | `DELETE` | `/api/videos/:id` | Requiere Auth | Eliminar video por ID |
-| **LiveSession** | `GET` | `/api/live-sessions` | Pública | Listar todas las Indie Now Sessions |
-| **LiveSession** | `GET` | `/api/live-sessions/featured` | Pública | Listar Sessions destacadas |
-| **LiveSession** | `GET` | `/api/live-sessions/:slug` | Pública | Obtener Session por slug |
+| **LiveSession** | `GET` | `/api/live-sessions` | Pública | Listar Sessions publicadas y visibles |
+| **LiveSession** | `GET` | `/api/live-sessions/featured` | Pública | Listar Sessions destacadas, publicadas y visibles |
+| **LiveSession** | `GET` | `/api/live-sessions/:slug` | Pública | Obtener Session publicada y visible por slug |
 | **LiveSession** | `POST` | `/api/live-sessions` | Requiere Auth | Crear Indie Now Session |
 | **LiveSession** | `PUT` | `/api/live-sessions/:id` | Requiere Auth | Actualizar Session por ID |
 | **LiveSession** | `DELETE` | `/api/live-sessions/:id` | Requiere Auth | Eliminar Session por ID |
-| **Playlist** | `GET` | `/api/playlists` | Pública | Listar todas las playlists |
-| **Playlist** | `GET` | `/api/playlists/featured` | Pública | Listar playlists destacadas |
-| **Playlist** | `GET` | `/api/playlists/:slug` | Pública | Obtener playlist por slug |
+| **Playlist** | `GET` | `/api/playlists` | Pública | Listar playlists publicadas y visibles |
+| **Playlist** | `GET` | `/api/playlists/featured` | Pública | Listar playlists destacadas, publicadas y visibles |
+| **Playlist** | `GET` | `/api/playlists/:slug` | Pública | Obtener playlist publicada y visible por slug |
 | **Playlist** | `POST` | `/api/playlists` | Requiere Auth | Importar playlist desde Spotify URL |
 | **Playlist** | `PUT` | `/api/playlists/:id` | Requiere Auth | Actualizar datos CMS de la playlist |
 | **Playlist** | `POST` | `/api/playlists/:id/sync` | Requiere Auth | Sincronizar metadatos desde Spotify API |
@@ -154,10 +162,12 @@ API RESTful para la plataforma **Indie Now**, desarrollada con **Node.js, Expres
 
 #### `GET /api/news`
 - **Autenticación**: Pública
+- **Descripción**: Devuelve solo noticias con `status = PUBLISHED` e `isVisible = true`. No incluye `content` ni el email del autor.
 - **Respuesta 200 OK**: Arreglo de noticias con relaciones `author`, `category` y `coverImage`.
 
 #### `GET /api/news/:slug`
 - **Autenticación**: Pública
+- **Descripción**: Devuelve la noticia solo si está publicada y visible. Incluye `content`.
 - **Parámetros de Ruta**: `slug` (string)
 - **Respuesta 200 OK**: Objeto noticia con relaciones.
 - **Respuesta 404 Not Found**: `{ "message": "Noticia no encontrada" }`

@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 
 import authRoutes from "./modules/auth/routes.js";
+import adminRoutes from "./modules/admin/routes.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 import categoryRoutes from "./modules/category/routes.js";
 import configRoutes from "./modules/config/routes.js";
@@ -41,6 +42,7 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/config", configRoutes);
 app.use("/api/image-search", imageSearchRoutes);

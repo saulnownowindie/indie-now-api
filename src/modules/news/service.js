@@ -1,7 +1,7 @@
 import prisma from "../../config/prisma.js";
 import { generateUniqueSlug } from "../../utils/slug.js";
 
-const newsInclude = {
+const adminNewsInclude = {
   category: true,
   coverImage: true,
   author: {
@@ -11,6 +11,47 @@ const newsInclude = {
       email: true,
     },
   },
+};
+
+const publicNewsSelect = {
+  id: true,
+  title: true,
+  slug: true,
+  platform: true,
+  url: true,
+  featured: true,
+  seoTitle: true,
+  seoDescription: true,
+  publishedAt: true,
+  homeSection: true,
+  sortOrder: true,
+  createdAt: true,
+  updatedAt: true,
+  category: {
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+    },
+  },
+  coverImage: {
+    select: {
+      id: true,
+      url: true,
+    },
+  },
+  author: {
+    select: {
+      id: true,
+      name: true,
+      avatarUrl: true,
+    },
+  },
+};
+
+const publishedWhere = {
+  status: "PUBLISHED",
+  isVisible: true,
 };
 
 const getUniqueSlug = async (title, excludedId) => {
@@ -27,22 +68,17 @@ const getUniqueSlug = async (title, excludedId) => {
   });
 };
 
-export const getAllNews = async () => {
-  return prisma.news.findMany({
-    include: newsInclude,
-    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-  });
+export const getAllNews = async (section) => {
+  return getPublicNews(section);
 };
 
 export const getPublicNews = async (section) => {
   return prisma.news.findMany({
     where: {
-      status: "PUBLISHED",
-      isVisible: true,
+      ...publishedWhere,
       ...(section ? { homeSection: section } : {}),
     },
-    include: newsInclude,
-    omit: { content: true },
+    select: publicNewsSelect,
     orderBy: [
       { sortOrder: "asc" },
       { publishedAt: "desc" },
@@ -52,9 +88,23 @@ export const getPublicNews = async (section) => {
 };
 
 export const getNewsBySlug = async (slug) => {
-  return prisma.news.findUnique({
-    where: { slug },
-    include: newsInclude,
+  return prisma.news.findFirst({
+    where: {
+      slug,
+      ...publishedWhere,
+    },
+    select: {
+      ...publicNewsSelect,
+      content: true,
+    },
+  });
+};
+
+// Lectura completa para el CMS: solo se expone en /api/admin/news.
+export const getAllNewsAdmin = async () => {
+  return prisma.news.findMany({
+    include: adminNewsInclude,
+    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
   });
 };
 
@@ -67,7 +117,7 @@ export const createNews = async (data, authorId) => {
       slug,
       authorId,
     },
-    include: newsInclude,
+    include: adminNewsInclude,
   });
 };
 
@@ -80,7 +130,7 @@ export const updateNews = async (id, data) => {
       ...data,
       ...(slug && { slug }),
     },
-    include: newsInclude,
+    include: adminNewsInclude,
   });
 };
 

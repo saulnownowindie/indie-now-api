@@ -1,7 +1,7 @@
 import prisma from "../../config/prisma.js";
 import { generateUniqueSlug } from "../../utils/slug.js";
 
-const merchInclude = {
+const adminMerchInclude = {
   coverImage: true,
   author: {
     select: {
@@ -10,6 +10,46 @@ const merchInclude = {
       email: true,
     },
   },
+};
+
+const publicMerchSelect = {
+  id: true,
+  name: true,
+  slug: true,
+  description: true,
+  collection: true,
+  price: true,
+  details: true,
+  imageUrl: true,
+  gallery: true,
+  badge: true,
+  url: true,
+  featured: true,
+  sortOrder: true,
+  seoTitle: true,
+  seoDescription: true,
+  publishedAt: true,
+  createdAt: true,
+  updatedAt: true,
+  icon: true,
+  coverImage: {
+    select: {
+      id: true,
+      url: true,
+    },
+  },
+  author: {
+    select: {
+      id: true,
+      name: true,
+      avatarUrl: true,
+    },
+  },
+};
+
+const publishedWhere = {
+  status: "PUBLISHED",
+  isVisible: true,
 };
 
 const getUniqueSlug = async (name, excludedId) => {
@@ -28,7 +68,8 @@ const getUniqueSlug = async (name, excludedId) => {
 
 export const getAllMerch = async () => {
   return prisma.merch.findMany({
-    include: merchInclude,
+    where: publishedWhere,
+    select: publicMerchSelect,
     orderBy: [{ sortOrder: "asc" }, { publishedAt: "desc" }, { createdAt: "desc" }],
   });
 };
@@ -36,19 +77,29 @@ export const getAllMerch = async () => {
 export const getFeaturedMerch = async () => {
   return prisma.merch.findMany({
     where: {
+      ...publishedWhere,
       featured: true,
-      isVisible: true,
-      status: "PUBLISHED",
     },
-    include: merchInclude,
+    select: publicMerchSelect,
     orderBy: [{ sortOrder: "asc" }, { publishedAt: "desc" }, { createdAt: "desc" }],
   });
 };
 
 export const getMerchBySlug = async (slug) => {
-  return prisma.merch.findUnique({
-    where: { slug },
-    include: merchInclude,
+  return prisma.merch.findFirst({
+    where: {
+      slug,
+      ...publishedWhere,
+    },
+    select: publicMerchSelect,
+  });
+};
+
+// Lectura completa para el CMS: solo se expone en /api/admin/merch.
+export const getAllMerchAdmin = async () => {
+  return prisma.merch.findMany({
+    include: adminMerchInclude,
+    orderBy: [{ sortOrder: "asc" }, { publishedAt: "desc" }, { createdAt: "desc" }],
   });
 };
 
@@ -61,7 +112,7 @@ export const createMerch = async (data, authorId) => {
       slug,
       authorId,
     },
-    include: merchInclude,
+    include: adminMerchInclude,
   });
 };
 
@@ -74,7 +125,7 @@ export const updateMerch = async (id, data) => {
       ...data,
       ...(slug && { slug }),
     },
-    include: merchInclude,
+    include: adminMerchInclude,
   });
 };
 

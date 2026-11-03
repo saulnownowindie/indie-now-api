@@ -2,6 +2,7 @@ import {
   createMerch,
   deleteMerch,
   getAllMerch,
+  getAllMerchAdmin,
   getFeaturedMerch,
   getMerchBySlug,
   updateMerch,
@@ -15,6 +16,16 @@ import {
 export const getMerch = async (req, res, next) => {
   try {
     const merch = await getAllMerch();
+
+    res.json(merch);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getMerchAdmin = async (req, res, next) => {
+  try {
+    const merch = await getAllMerchAdmin();
 
     res.json(merch);
   } catch (error) {

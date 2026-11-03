@@ -6,7 +6,7 @@ import {
 import { getSpotifyPlaylistMetadata } from "../../integrations/spotify/provider.js";
 import { generateUniqueSlug } from "../../utils/slug.js";
 
-const playlistInclude = {
+const adminPlaylistInclude = {
   author: {
     select: {
       id: true,
@@ -14,6 +14,41 @@ const playlistInclude = {
       email: true,
     },
   },
+};
+
+const publicPlaylistSelect = {
+  id: true,
+  title: true,
+  slug: true,
+  platform: true,
+  featured: true,
+  seoTitle: true,
+  seoDescription: true,
+  publishedAt: true,
+  createdAt: true,
+  updatedAt: true,
+  coverUrl: true,
+  url: true,
+  description: true,
+  ownerName: true,
+  sortOrder: true,
+  spotifyId: true,
+  spotifyUrl: true,
+  spotifySyncedAt: true,
+  tracksCount: true,
+  icon: true,
+  author: {
+    select: {
+      id: true,
+      name: true,
+      avatarUrl: true,
+    },
+  },
+};
+
+const publishedWhere = {
+  status: "PUBLISHED",
+  isVisible: true,
 };
 
 const getUniqueSlug = async (title, excludedId) => {
@@ -88,7 +123,8 @@ const getSpotifyOembedCoverUrl = async (spotifyUrl) => {
 
 export const getAllPlaylists = async () => {
   return prisma.playlist.findMany({
-    include: playlistInclude,
+    where: publishedWhere,
+    select: publicPlaylistSelect,
     orderBy: [{ sortOrder: "asc" }, { publishedAt: "desc" }, { createdAt: "desc" }],
   });
 };
@@ -96,19 +132,29 @@ export const getAllPlaylists = async () => {
 export const getFeaturedPlaylists = async () => {
   return prisma.playlist.findMany({
     where: {
+      ...publishedWhere,
       featured: true,
-      isVisible: true,
-      status: "PUBLISHED",
     },
-    include: playlistInclude,
+    select: publicPlaylistSelect,
     orderBy: [{ sortOrder: "asc" }, { publishedAt: "desc" }, { createdAt: "desc" }],
   });
 };
 
 export const getPlaylistBySlug = async (slug) => {
-  return prisma.playlist.findUnique({
-    where: { slug },
-    include: playlistInclude,
+  return prisma.playlist.findFirst({
+    where: {
+      slug,
+      ...publishedWhere,
+    },
+    select: publicPlaylistSelect,
+  });
+};
+
+// Lectura completa para el CMS: solo se expone en /api/admin/playlists.
+export const getAllPlaylistsAdmin = async () => {
+  return prisma.playlist.findMany({
+    include: adminPlaylistInclude,
+    orderBy: [{ sortOrder: "asc" }, { publishedAt: "desc" }, { createdAt: "desc" }],
   });
 };
 
@@ -145,7 +191,7 @@ export const createPlaylist = async (data, authorId) => {
           (status === "PUBLISHED" ? new Date() : null),
         authorId,
       },
-      include: playlistInclude,
+      include: adminPlaylistInclude,
     });
   }
 
@@ -165,7 +211,7 @@ export const createPlaylist = async (data, authorId) => {
       platform: "SPOTIFY",
       authorId,
     },
-    include: playlistInclude,
+    include: adminPlaylistInclude,
   });
 };
 
@@ -209,7 +255,7 @@ export const updatePlaylist = async (id, data) => {
   return prisma.playlist.update({
     where: { id },
     data: payload,
-    include: playlistInclude,
+    include: adminPlaylistInclude,
   });
 };
 
@@ -243,7 +289,7 @@ export const syncPlaylist = async (id) => {
       ...spotifyData,
       url: spotifyData.spotifyUrl,
     },
-    include: playlistInclude,
+    include: adminPlaylistInclude,
   });
 };
 

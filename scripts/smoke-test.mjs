@@ -1,4 +1,5 @@
 import "dotenv/config";
+import jwt from "jsonwebtoken";
 
 process.env.WORKER_TOKEN ||= "smoke-worker-token";
 
@@ -21,11 +22,22 @@ const endpoints = [
   "/api/live-sessions",
   "/api/playlists",
   "/api/categories",
-  "/api/media",
   "/api/reels",
   "/api/reels/public",
   "/api/reels/public?section=REELS",
   "/api/merch",
+];
+
+const protectedReads = [
+  "/api/media",
+  "/api/media/1",
+  "/api/users",
+  "/api/admin/news",
+  "/api/admin/reels",
+  "/api/admin/videos",
+  "/api/admin/live-sessions",
+  "/api/admin/merch",
+  "/api/admin/playlists",
 ];
 
 let failed = false;
@@ -36,6 +48,237 @@ for (const endpoint of endpoints) {
 
   if (!response.ok) {
     failed = true;
+  }
+}
+
+for (const endpoint of protectedReads) {
+  const response = await fetch(`${base}${endpoint}`);
+  console.log(`${response.status} ${endpoint} (sin token)`);
+
+  if (response.status !== 401) {
+    failed = true;
+  }
+}
+
+async function checkPublicPayloads() {
+  const publicNews = await (await fetch(`${base}/api/news`)).json();
+  const publicReels = await (await fetch(`${base}/api/reels`)).json();
+  const publicVideos = await (await fetch(`${base}/api/videos`)).json();
+  const publicSessions = await (
+    await fetch(`${base}/api/live-sessions`)
+  ).json();
+  const publicMerch = await (await fetch(`${base}/api/merch`)).json();
+  const publicPlaylists = await (
+    await fetch(`${base}/api/playlists`)
+  ).json();
+
+  const collections = [
+    ["news", publicNews],
+    ["reels", publicReels],
+    ["videos", publicVideos],
+    ["live-sessions", publicSessions],
+    ["merch", publicMerch],
+    ["playlists", publicPlaylists],
+  ];
+
+  for (const [name, rows] of collections) {
+    if (!Array.isArray(rows)) {
+      console.log(`FAIL ${name}: la respuesta pública no es un arreglo`);
+      failed = true;
+      continue;
+    }
+
+    for (const row of rows) {
+      if (row.author?.email) {
+        console.log(`FAIL ${name}: se expone author.email en "${row.slug}"`);
+        failed = true;
+      }
+
+      if (row.coverImage?.size !== undefined) {
+        console.log(`FAIL ${name}: se expone coverImage.size en "${row.slug}"`);
+        failed = true;
+      }
+
+      if ("content" in row) {
+        console.log(`FAIL ${name}: se expone content en el listado "${row.slug}"`);
+        failed = true;
+      }
+    }
+  }
+
+  const hiddenNews = await prisma.news.findMany({
+    where: {
+      OR: [{ status: { not: "PUBLISHED" } }, { isVisible: false }],
+    },
+    select: { slug: true },
+  });
+
+  const publicNewsSlugs = new Set(publicNews.map((row) => row.slug));
+
+  for (const { slug } of hiddenNews) {
+    if (publicNewsSlugs.has(slug)) {
+      console.log(`FAIL news: borrador visible públicamente (${slug})`);
+      failed = true;
+    }
+  }
+
+  if (hiddenNews[0]) {
+    const detail = await fetch(`${base}/api/news/${hiddenNews[0].slug}`);
+    console.log(`${detail.status} GET /api/news/${hiddenNews[0].slug} (borrador)`);
+
+    if (detail.status !== 404) {
+      failed = true;
+    }
+  }
+
+  const hiddenReels = await prisma.reel.findMany({
+    where: {
+      OR: [{ status: { not: "PUBLISHED" } }, { isVisible: false }],
+    },
+    select: { slug: true },
+  });
+
+  const publicReelSlugs = new Set(publicReels.map((row) => row.slug));
+
+  for (const { slug } of hiddenReels) {
+    if (publicReelSlugs.has(slug)) {
+      console.log(`FAIL reels: borrador visible públicamente (${slug})`);
+      failed = true;
+    }
+  }
+}
+
+async function checkDraftIsolation() {
+  const author = await prisma.user.findFirst({ select: { id: true } });
+
+  if (!author) {
+    console.log("SKIP draft isolation: no hay usuarios en la base.");
+    return;
+  }
+
+  const stamp = Date.now();
+  let category = await prisma.category.findFirst({ select: { id: true } });
+  let createdCategory = false;
+
+  if (!category) {
+    category = await prisma.category.create({
+      data: { name: `Smoke category ${stamp}`, slug: `smoke-category-${stamp}` },
+      select: { id: true },
+    });
+    createdCategory = true;
+  }
+
+  const draft = await prisma.news.create({
+    data: {
+      title: `Smoke draft ${stamp}`,
+      slug: `smoke-draft-${stamp}`,
+      platform: "OTHER",
+      url: `https://example.com/smoke-draft-${stamp}`,
+      categoryId: category.id,
+      authorId: author.id,
+      status: "DRAFT",
+      isVisible: true,
+    },
+    select: { id: true, slug: true },
+  });
+
+  const hidden = await prisma.news.create({
+    data: {
+      title: `Smoke hidden ${stamp}`,
+      slug: `smoke-hidden-${stamp}`,
+      platform: "OTHER",
+      url: `https://example.com/smoke-hidden-${stamp}`,
+      categoryId: category.id,
+      authorId: author.id,
+      status: "PUBLISHED",
+      isVisible: false,
+    },
+    select: { id: true, slug: true },
+  });
+
+  const hiddenReel = await prisma.reel.create({
+    data: {
+      title: `Smoke hidden reel ${stamp}`,
+      slug: `smoke-hidden-reel-${stamp}`,
+      platform: "OTHER",
+      url: `https://example.com/smoke-hidden-reel-${stamp}`,
+      authorId: author.id,
+      status: "PUBLISHED",
+      isVisible: false,
+    },
+    select: { id: true, slug: true },
+  });
+
+  try {
+    const newsList = await (await fetch(`${base}/api/news`)).json();
+    const reelList = await (await fetch(`${base}/api/reels`)).json();
+
+    const leaked = [
+      ...newsList.filter((row) =>
+        [draft.slug, hidden.slug].includes(row.slug),
+      ),
+      ...reelList.filter((row) => row.slug === hiddenReel.slug),
+    ];
+
+    if (leaked.length > 0) {
+      console.log(
+        `FAIL draft isolation: ${leaked.map((row) => row.slug).join(", ")}`,
+      );
+      failed = true;
+    } else {
+      console.log("OK draft isolation: borradores y ocultos no aparecen");
+    }
+
+    for (const [endpoint, slug] of [
+      ["news", draft.slug],
+      ["news", hidden.slug],
+      ["reels", hiddenReel.slug],
+    ]) {
+      const response = await fetch(`${base}/api/${endpoint}/${slug}`);
+      console.log(`${response.status} GET /api/${endpoint}/${slug} (oculto)`);
+
+      if (response.status !== 404) {
+        failed = true;
+      }
+    }
+  } finally {
+    await prisma.news.deleteMany({
+      where: { id: { in: [draft.id, hidden.id] } },
+    });
+    await prisma.reel.deleteMany({ where: { id: hiddenReel.id } });
+    if (createdCategory) {
+      await prisma.category.delete({ where: { id: category.id } });
+    }
+  }
+}
+
+async function checkAdminAccess() {
+  const author = await prisma.user.findFirst({
+    select: { id: true, email: true },
+  });
+
+  if (!author || !process.env.JWT_SECRET) {
+    console.log("SKIP admin read tests: faltan usuario o JWT_SECRET.");
+    return;
+  }
+
+  const token = jwt.sign(
+    { id: author.id, email: author.email },
+    process.env.JWT_SECRET,
+    { expiresIn: "5m" },
+  );
+
+  for (const endpoint of protectedReads.filter((path) =>
+    path.startsWith("/api/admin/"),
+  )) {
+    const response = await fetch(`${base}${endpoint}`, {
+      headers: { authorization: `Bearer ${token}` },
+    });
+    console.log(`${response.status} ${endpoint} (con token)`);
+
+    if (response.status !== 200) {
+      failed = true;
+    }
   }
 }
 
@@ -227,6 +470,9 @@ async function checkWorkerEndpoints() {
 }
 
 try {
+  await checkPublicPayloads();
+  await checkDraftIsolation();
+  await checkAdminAccess();
   await checkWorkerEndpoints();
 
   const [reels, merch] = await Promise.all([

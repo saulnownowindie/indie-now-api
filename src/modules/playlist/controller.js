@@ -2,6 +2,7 @@ import {
   createPlaylist,
   deletePlaylist,
   getAllPlaylists,
+  getAllPlaylistsAdmin,
   getFeaturedPlaylists,
   getPlaylistBySlug,
   syncPlaylist,
@@ -16,6 +17,16 @@ import {
 export const getPlaylists = async (req, res, next) => {
   try {
     const playlists = await getAllPlaylists();
+
+    res.json(playlists);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getPlaylistsAdmin = async (req, res, next) => {
+  try {
+    const playlists = await getAllPlaylistsAdmin();
 
     res.json(playlists);
   } catch (error) {

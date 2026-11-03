@@ -2,7 +2,7 @@ import prisma from "../../config/prisma.js";
 import { generateUniqueSlug } from "../../utils/slug.js";
 import { normalizeYouTubeUrl } from "../../utils/youtube.js";
 
-const liveSessionInclude = {
+const adminLiveSessionInclude = {
   coverImage: true,
   author: {
     select: {
@@ -11,6 +11,37 @@ const liveSessionInclude = {
       email: true,
     },
   },
+};
+
+const publicLiveSessionSelect = {
+  id: true,
+  title: true,
+  slug: true,
+  youtubeUrl: true,
+  featured: true,
+  seoTitle: true,
+  seoDescription: true,
+  publishedAt: true,
+  createdAt: true,
+  updatedAt: true,
+  coverImage: {
+    select: {
+      id: true,
+      url: true,
+    },
+  },
+  author: {
+    select: {
+      id: true,
+      name: true,
+      avatarUrl: true,
+    },
+  },
+};
+
+const publishedWhere = {
+  status: "PUBLISHED",
+  isVisible: true,
 };
 
 const getUniqueSlug = async (title, excludedId) => {
@@ -29,23 +60,38 @@ const getUniqueSlug = async (title, excludedId) => {
 
 export const getAllLiveSessions = async () => {
   return prisma.liveSession.findMany({
-    include: liveSessionInclude,
+    where: publishedWhere,
+    select: publicLiveSessionSelect,
     orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
   });
 };
 
 export const getFeaturedLiveSessions = async () => {
   return prisma.liveSession.findMany({
-    where: { featured: true },
-    include: liveSessionInclude,
+    where: {
+      ...publishedWhere,
+      featured: true,
+    },
+    select: publicLiveSessionSelect,
     orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
   });
 };
 
 export const getLiveSessionBySlug = async (slug) => {
-  return prisma.liveSession.findUnique({
-    where: { slug },
-    include: liveSessionInclude,
+  return prisma.liveSession.findFirst({
+    where: {
+      slug,
+      ...publishedWhere,
+    },
+    select: publicLiveSessionSelect,
+  });
+};
+
+// Lectura completa para el CMS: solo se expone en /api/admin/live-sessions.
+export const getAllLiveSessionsAdmin = async () => {
+  return prisma.liveSession.findMany({
+    include: adminLiveSessionInclude,
+    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
   });
 };
 
@@ -59,7 +105,7 @@ export const createLiveSession = async (data, authorId) => {
       slug,
       authorId,
     },
-    include: liveSessionInclude,
+    include: adminLiveSessionInclude,
   });
 };
 
@@ -76,7 +122,7 @@ export const updateLiveSession = async (id, data) => {
       ...(slug && { slug }),
       ...(youtubeUrl && { youtubeUrl }),
     },
-    include: liveSessionInclude,
+    include: adminLiveSessionInclude,
   });
 };
 

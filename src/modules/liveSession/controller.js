@@ -2,6 +2,7 @@ import {
   createLiveSession,
   deleteLiveSession,
   getAllLiveSessions,
+  getAllLiveSessionsAdmin,
   getFeaturedLiveSessions,
   getLiveSessionBySlug,
   updateLiveSession,
@@ -15,6 +16,16 @@ import {
 export const getLiveSessions = async (req, res, next) => {
   try {
     const liveSessions = await getAllLiveSessions();
+
+    res.json(liveSessions);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getLiveSessionsAdmin = async (req, res, next) => {
+  try {
+    const liveSessions = await getAllLiveSessionsAdmin();
 
     res.json(liveSessions);
   } catch (error) {

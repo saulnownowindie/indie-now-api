@@ -2,7 +2,7 @@ import prisma from "../../config/prisma.js";
 import { generateUniqueSlug } from "../../utils/slug.js";
 import { normalizeYouTubeUrl } from "../../utils/youtube.js";
 
-const videoInclude = {
+const adminVideoInclude = {
   category: true,
   coverImage: true,
   author: {
@@ -12,6 +12,44 @@ const videoInclude = {
       email: true,
     },
   },
+};
+
+const publicVideoSelect = {
+  id: true,
+  title: true,
+  slug: true,
+  youtubeUrl: true,
+  featured: true,
+  seoTitle: true,
+  seoDescription: true,
+  publishedAt: true,
+  createdAt: true,
+  updatedAt: true,
+  category: {
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+    },
+  },
+  coverImage: {
+    select: {
+      id: true,
+      url: true,
+    },
+  },
+  author: {
+    select: {
+      id: true,
+      name: true,
+      avatarUrl: true,
+    },
+  },
+};
+
+const publishedWhere = {
+  status: "PUBLISHED",
+  isVisible: true,
 };
 
 const getUniqueSlug = async (title, excludedId) => {
@@ -30,15 +68,27 @@ const getUniqueSlug = async (title, excludedId) => {
 
 export const getAllVideos = async () => {
   return prisma.video.findMany({
-    include: videoInclude,
+    where: publishedWhere,
+    select: publicVideoSelect,
     orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
   });
 };
 
 export const getVideoBySlug = async (slug) => {
-  return prisma.video.findUnique({
-    where: { slug },
-    include: videoInclude,
+  return prisma.video.findFirst({
+    where: {
+      slug,
+      ...publishedWhere,
+    },
+    select: publicVideoSelect,
+  });
+};
+
+// Lectura completa para el CMS: solo se expone en /api/admin/videos.
+export const getAllVideosAdmin = async () => {
+  return prisma.video.findMany({
+    include: adminVideoInclude,
+    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
   });
 };
 
@@ -52,7 +102,7 @@ export const createVideo = async (data, authorId) => {
       slug,
       authorId,
     },
-    include: videoInclude,
+    include: adminVideoInclude,
   });
 };
 
@@ -69,7 +119,7 @@ export const updateVideo = async (id, data) => {
       ...(slug && { slug }),
       ...(youtubeUrl && { youtubeUrl }),
     },
-    include: videoInclude,
+    include: adminVideoInclude,
   });
 };
 

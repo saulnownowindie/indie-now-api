@@ -2,6 +2,7 @@ import {
   createVideo,
   deleteVideo,
   getAllVideos,
+  getAllVideosAdmin,
   getVideoBySlug,
   updateVideo,
 } from "./service.js";
@@ -14,6 +15,16 @@ import {
 export const getVideos = async (req, res, next) => {
   try {
     const videos = await getAllVideos();
+
+    res.json(videos);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getVideosAdmin = async (req, res, next) => {
+  try {
+    const videos = await getAllVideosAdmin();
 
     res.json(videos);
   } catch (error) {
